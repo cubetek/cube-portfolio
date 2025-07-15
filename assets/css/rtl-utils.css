@@ -1,0 +1,407 @@
+/* RTL/LTR Utilities for Homepage Components */
+
+/* Base RTL support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="ltr"] {
+  text-align: left;
+}
+
+/* Direction-aware margin and padding utilities */
+.ms-auto {
+  margin-inline-start: auto;
+}
+
+.me-auto {
+  margin-inline-end: auto;
+}
+
+.ps-4 {
+  padding-inline-start: 1rem;
+}
+
+.pe-4 {
+  padding-inline-end: 1rem;
+}
+
+/* Flexbox direction utilities */
+.flex-row-reverse-rtl {
+  flex-direction: row;
+}
+
+[dir="rtl"] .flex-row-reverse-rtl {
+  flex-direction: row-reverse;
+}
+
+/* Text alignment utilities */
+.text-start {
+  text-align: start;
+}
+
+.text-end {
+  text-align: end;
+}
+
+/* Border utilities for RTL */
+.border-s {
+  border-inline-start-width: 1px;
+}
+
+.border-e {
+  border-inline-end-width: 1px;
+}
+
+/* Transform utilities for RTL */
+.scale-x-flip {
+  transform: scaleX(1);
+}
+
+[dir="rtl"] .scale-x-flip {
+  transform: scaleX(-1);
+}
+
+/* Navigation and menu utilities */
+.nav-item {
+  margin-inline-end: 1rem;
+}
+
+.nav-item:last-child {
+  margin-inline-end: 0;
+}
+
+/* Card and component specific RTL support */
+.card-rtl {
+  direction: inherit;
+}
+
+.card-rtl .card-header {
+  text-align: start;
+}
+
+.card-rtl .card-actions {
+  justify-content: flex-start;
+}
+
+[dir="rtl"] .card-rtl .card-actions {
+  justify-content: flex-end;
+}
+
+/* Icon positioning for RTL */
+.icon-start {
+  margin-inline-end: 0.5rem;
+}
+
+.icon-end {
+  margin-inline-start: 0.5rem;
+}
+
+/* Grid layout adjustments for RTL */
+.grid-rtl {
+  direction: ltr;
+}
+
+.grid-rtl > * {
+  direction: rtl;
+}
+
+[dir="ltr"] .grid-rtl {
+  direction: ltr;
+}
+
+[dir="ltr"] .grid-rtl > * {
+  direction: ltr;
+}
+
+/* Timeline and progress indicators */
+.timeline-item::before {
+  left: 0;
+  right: auto;
+}
+
+[dir="rtl"] .timeline-item::before {
+  left: auto;
+  right: 0;
+}
+
+/* Tooltip and popover positioning */
+.tooltip-start {
+  transform-origin: left center;
+}
+
+[dir="rtl"] .tooltip-start {
+  transform-origin: right center;
+}
+
+/* Form input direction support */
+.form-input-rtl {
+  direction: inherit;
+  text-align: start;
+}
+
+/* Table RTL support */
+.table-rtl {
+  direction: ltr;
+}
+
+.table-rtl th,
+.table-rtl td {
+  direction: rtl;
+  text-align: start;
+}
+
+[dir="ltr"] .table-rtl {
+  direction: ltr;
+}
+
+[dir="ltr"] .table-rtl th,
+[dir="ltr"] .table-rtl td {
+  direction: ltr;
+}
+
+/* Animation direction utilities */
+.slide-in-start {
+  animation: slideInStart 0.3s ease-out;
+}
+
+.slide-in-end {
+  animation: slideInEnd 0.3s ease-out;
+}
+
+@keyframes slideInStart {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInEnd {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+[dir="rtl"] .slide-in-start {
+  animation: slideInEnd 0.3s ease-out;
+}
+
+[dir="rtl"] .slide-in-end {
+  animation: slideInStart 0.3s ease-out;
+}
+
+/* Component-specific RTL fixes */
+
+/* Hero Section RTL */
+.hero-content {
+  text-align: start;
+}
+
+.hero-actions {
+  justify-content: flex-start;
+}
+
+[dir="rtl"] .hero-actions {
+  justify-content: flex-end;
+}
+
+/* Projects showcase RTL */
+.project-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+[dir="rtl"] .project-meta {
+  flex-direction: row-reverse;
+}
+
+.project-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+[dir="rtl"] .project-tech {
+  flex-direction: row-reverse;
+}
+
+/* Skills display RTL */
+.skill-level {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+[dir="rtl"] .skill-level {
+  flex-direction: row-reverse;
+}
+
+.progress-bar {
+  direction: ltr;
+}
+
+[dir="rtl"] .progress-bar {
+  direction: rtl;
+}
+
+/* About section RTL */
+.about-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 4rem;
+}
+
+[dir="rtl"] .about-content {
+  grid-template-columns: 2fr 1fr;
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+}
+
+[dir="rtl"] .social-links {
+  flex-direction: row-reverse;
+}
+
+/* Typography RTL adjustments */
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6 {
+  letter-spacing: 0.025em;
+}
+
+[dir="rtl"] .text-lg {
+  letter-spacing: 0.015em;
+}
+
+[dir="rtl"] .text-sm {
+  letter-spacing: 0.01em;
+}
+
+/* Number and date formatting */
+.number-display {
+  direction: ltr;
+  display: inline-block;
+}
+
+.date-display {
+  direction: ltr;
+  display: inline-block;
+}
+
+[dir="rtl"] .number-display,
+[dir="rtl"] .date-display {
+  direction: ltr;
+}
+
+/* Badge and tag RTL support */
+.badge-rtl {
+  direction: inherit;
+}
+
+.tech-badge {
+  direction: ltr;
+  display: inline-block;
+}
+
+/* Image and media RTL support */
+.image-caption {
+  text-align: start;
+}
+
+.media-object {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+[dir="rtl"] .media-object {
+  flex-direction: row-reverse;
+}
+
+/* Loading and skeleton RTL */
+.skeleton-line {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: loading 1.5s infinite;
+}
+
+[dir="rtl"] .skeleton-line {
+  background: linear-gradient(-90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+}
+
+@keyframes loading {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
+
+/* Responsive RTL adjustments */
+@media (max-width: 768px) {
+  [dir="rtl"] .about-content {
+    grid-template-columns: 1fr;
+  }
+  
+  [dir="rtl"] .social-links {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  [dir="rtl"] .hero-actions {
+    justify-content: center;
+  }
+  
+  [dir="rtl"] .project-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* Focus and accessibility RTL */
+.focus-visible-rtl:focus-visible {
+  outline: 2px solid var(--color-primary-600);
+  outline-offset: 2px;
+}
+
+/* Print styles RTL */
+@media print {
+  [dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+  }
+  
+  [dir="rtl"] .no-print {
+    display: none;
+  }
+}
+
+/* High contrast mode RTL */
+@media (prefers-contrast: high) {
+  [dir="rtl"] {
+    border-color: currentColor;
+  }
+}
+
+/* Reduced motion RTL */
+@media (prefers-reduced-motion: reduce) {
+  [dir="rtl"] .slide-in-start,
+  [dir="rtl"] .slide-in-end {
+    animation: none;
+  }
+}

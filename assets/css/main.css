@@ -1,0 +1,398 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+@import "./rtl-utils.css";
+
+@theme {
+  /* Theme-specific CSS variables */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+  
+}
+
+/* Root theme variables */
+:root {
+  /* Colors */
+  --theme-primary: #3b82f6;
+  --theme-secondary: #6b7280;
+  --theme-accent: #10b981;
+  --theme-background: #ffffff;
+  --theme-surface: #f8fafc;
+  --theme-text: #1f2937;
+  --theme-border: #e5e7eb;
+  
+  /* Radius */
+  --theme-radius-sm: 0.375rem;
+  --theme-radius-md: 0.5rem;
+  --theme-radius-lg: 0.75rem;
+  --theme-radius-xl: 1rem;
+  --theme-radius-full: 9999px;
+  
+  /* Typography */
+  --theme-font-family: Inter, system-ui, sans-serif;
+  --theme-font-family-arabic: Tajawal, 'Noto Sans Arabic', system-ui, sans-serif;
+  --theme-font-weight-normal: 400;
+  --theme-font-weight-medium: 500;
+  --theme-font-weight-bold: 700;
+  --theme-font-size-xs: 0.75rem;
+  --theme-font-size-sm: 0.875rem;
+  --theme-font-size-base: 1rem;
+  --theme-font-size-lg: 1.125rem;
+  --theme-font-size-xl: 1.25rem;
+  
+  /* Spacing */
+  --theme-spacing-xs: 0.5rem;
+  --theme-spacing-sm: 0.75rem;
+  --theme-spacing-md: 1rem;
+  --theme-spacing-lg: 1.5rem;
+  --theme-spacing-xl: 2rem;
+  
+  /* Shadows */
+  --theme-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --theme-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --theme-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --theme-shadow-glow: 0 0 0 3px rgb(59 130 246 / 0.1);
+  
+  /* Animations */
+  --theme-animation-duration: 200ms;
+  --theme-animation-easing: ease-out;
+  
+  /* Effects */
+  --theme-blur: 8px;
+  --theme-opacity: 0.8;
+  
+  /* Layout */
+  --theme-gap: 1rem;
+}
+
+/* Light theme */
+.light {
+  --theme-primary: #3b82f6;
+  --theme-secondary: #6b7280;
+  --theme-accent: #10b981;
+  --theme-background: #ffffff;
+  --theme-surface: #f8fafc;
+  --theme-text: #1f2937;
+  --theme-border: #e5e7eb;
+}
+
+/* Dark theme */
+.dark {
+  --theme-primary: #60a5fa;
+  --theme-secondary: #9ca3af;
+  --theme-accent: #34d399;
+  --theme-background: #0f172a;
+  --theme-surface: #1e293b;
+  --theme-text: #f1f5f9;
+  --theme-border: #334155;
+}
+
+/* Modern theme */
+.modern {
+  --theme-primary: #8b5cf6;
+  --theme-secondary: #6b7280;
+  --theme-accent: #f59e0b;
+  --theme-background: #fafafa;
+  --theme-surface: #f4f4f5;
+  --theme-text: #1f2937;
+  --theme-border: #e4e4e7;
+}
+
+/* Minimal theme */
+.minimal {
+  --theme-primary: #6b7280;
+  --theme-secondary: #9ca3af;
+  --theme-accent: #059669;
+  --theme-background: #ffffff;
+  --theme-surface: #f9fafb;
+  --theme-text: #374151;
+  --theme-border: #d1d5db;
+}
+
+/* Ocean theme */
+.ocean {
+  --theme-primary: #0ea5e9;
+  --theme-secondary: #64748b;
+  --theme-accent: #06b6d4;
+  --theme-background: #f8fafc;
+  --theme-surface: #f1f5f9;
+  --theme-text: #1e293b;
+  --theme-border: #cbd5e1;
+}
+
+/* Forest theme */
+.forest {
+  --theme-primary: #059669;
+  --theme-secondary: #6b7280;
+  --theme-accent: #84cc16;
+  --theme-background: #f0fdf4;
+  --theme-surface: #ecfdf5;
+  --theme-text: #064e3b;
+  --theme-border: #bbf7d0;
+}
+
+/* Matrix theme */
+.matrix {
+  --theme-primary: #00ff41;
+  --theme-secondary: #008f11;
+  --theme-accent: #39ff14;
+  --theme-background: #000000;
+  --theme-surface: #0d1117;
+  --theme-text: #00ff41;
+  --theme-border: #1f4f23;
+  font-family: 'Courier New', monospace;
+}
+
+.matrix * {
+  text-shadow: 0 0 5px currentColor;
+}
+
+.matrix .bg-theme-primary {
+  box-shadow: 0 0 10px var(--theme-primary);
+}
+
+.matrix .border-theme-border {
+  box-shadow: inset 0 0 5px var(--theme-border);
+}
+
+/* Cyberpunk theme */
+.cyberpunk {
+  --theme-primary: #ff0080;
+  --theme-secondary: #00ffff;
+  --theme-accent: #ffff00;
+  --theme-background: #0a0014;
+  --theme-surface: #1a0028;
+  --theme-text: #ff0080;
+  --theme-border: rgba(255, 0, 128, 0.3);
+}
+
+.cyberpunk * {
+  text-shadow: 0 0 8px currentColor;
+}
+
+.cyberpunk .bg-theme-primary {
+  box-shadow: 0 0 15px var(--theme-primary);
+}
+
+/* Neon theme */
+.neon {
+  --theme-primary: #00d4ff;
+  --theme-secondary: #ff6b00;
+  --theme-accent: #ff00ff;
+  --theme-background: #0c0c0c;
+  --theme-surface: #1a1a1a;
+  --theme-text: #00d4ff;
+  --theme-border: rgba(0, 212, 255, 0.25);
+}
+
+.neon * {
+  text-shadow: 0 0 10px currentColor;
+}
+
+.neon .bg-theme-primary {
+  box-shadow: 0 0 20px var(--theme-primary);
+}
+
+/* Retro theme */
+.retro {
+  --theme-primary: #ff8c00;
+  --theme-secondary: #8a2be2;
+  --theme-accent: #ff1493;
+  --theme-background: #2f1b69;
+  --theme-surface: #3d2981;
+  --theme-text: #ffd700;
+  --theme-border: #9370db;
+}
+
+/* Utility classes for theme colors */
+.bg-theme-primary { background-color: var(--theme-primary); }
+.bg-theme-secondary { background-color: var(--theme-secondary); }
+.bg-theme-accent { background-color: var(--theme-accent); }
+.bg-theme-background { background-color: var(--theme-background); }
+.bg-theme-surface { background-color: var(--theme-surface); }
+
+.text-theme-primary { color: var(--theme-primary); }
+.text-theme-secondary { color: var(--theme-secondary); }
+.text-theme-accent { color: var(--theme-accent); }
+.text-theme-text { color: var(--theme-text); }
+
+.border-theme-border { border-color: var(--theme-border); }
+.border-theme-primary { border-color: var(--theme-primary); }
+
+/* Utility classes for theme radius */
+.rounded-theme-sm { border-radius: var(--theme-radius-sm); }
+.rounded-theme-md { border-radius: var(--theme-radius-md); }
+.rounded-theme-lg { border-radius: var(--theme-radius-lg); }
+.rounded-theme-xl { border-radius: var(--theme-radius-xl); }
+.rounded-theme-full { border-radius: var(--theme-radius-full); }
+
+/* Utility classes for theme typography */
+.font-theme { font-family: var(--theme-font-family); }
+.font-theme-normal { font-weight: var(--theme-font-weight-normal); }
+.font-theme-medium { font-weight: var(--theme-font-weight-medium); }
+.font-theme-bold { font-weight: var(--theme-font-weight-bold); }
+
+.text-theme-xs { font-size: var(--theme-font-size-xs); }
+.text-theme-sm { font-size: var(--theme-font-size-sm); }
+.text-theme-base { font-size: var(--theme-font-size-base); }
+.text-theme-lg { font-size: var(--theme-font-size-lg); }
+.text-theme-xl { font-size: var(--theme-font-size-xl); }
+
+/* Utility classes for theme spacing */
+.p-theme-xs { padding: var(--theme-spacing-xs); }
+.p-theme-sm { padding: var(--theme-spacing-sm); }
+.p-theme-md { padding: var(--theme-spacing-md); }
+.p-theme-lg { padding: var(--theme-spacing-lg); }
+.p-theme-xl { padding: var(--theme-spacing-xl); }
+
+.gap-theme { gap: var(--theme-gap); }
+
+/* Utility classes for theme shadows */
+.shadow-theme-sm { box-shadow: var(--theme-shadow-sm); }
+.shadow-theme-md { box-shadow: var(--theme-shadow-md); }
+.shadow-theme-lg { box-shadow: var(--theme-shadow-lg); }
+.shadow-theme-glow { box-shadow: var(--theme-shadow-glow); }
+
+/* Theme transitions */
+.transition-theme {
+  transition-duration: var(--theme-animation-duration);
+  transition-timing-function: var(--theme-animation-easing);
+}
+
+/* Density classes */
+.density-compact {
+  --theme-gap: 0.5rem;
+  --density-multiplier: 0.75;
+}
+
+.density-compact * {
+  padding: calc(var(--theme-spacing-md) * var(--density-multiplier, 1));
+}
+
+.density-normal {
+  --density-multiplier: 1;
+}
+
+.density-spacious {
+  --theme-gap: 1.5rem;
+  --density-multiplier: 1.25;
+}
+
+.density-spacious * {
+  padding: calc(var(--theme-spacing-md) * var(--density-multiplier, 1));
+}
+
+/* Glassmorphism effect */
+.glassmorphism {
+  backdrop-filter: blur(var(--theme-blur));
+  background: rgba(255, 255, 255, var(--theme-opacity));
+}
+
+.glassmorphism.dark {
+  background: rgba(0, 0, 0, var(--theme-opacity));
+}
+
+[data-theme] .bg-primary-500 { background-color: var(--theme-primary) !important; }
+[data-theme] .text-primary-500 { color: var(--theme-primary) !important; }
+[data-theme] .border-primary-500 { border-color: var(--theme-primary) !important; }
+[data-theme] .ring-primary-500 { --tw-ring-color: var(--theme-primary) !important; }
+
+[data-theme] .bg-gray-50 { background-color: var(--theme-surface) !important; }
+[data-theme] .bg-gray-100 { background-color: var(--theme-background) !important; }
+[data-theme] .text-gray-900 { color: var(--theme-text) !important; }
+[data-theme] .border-gray-200 { border-color: var(--theme-border) !important; }
+
+/* Neumorphism effect */
+.neumorphism {
+  box-shadow: 
+    inset 2px 2px 4px rgba(255, 255, 255, 0.1),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.1),
+    2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Global theme font application */
+body {
+  font-family: var(--theme-font-family);
+  transition: font-family var(--theme-animation-duration) var(--theme-animation-easing);
+}
+
+/* Arabic typography support */
+[dir="rtl"] {
+  font-family: var(--theme-font-family-arabic);
+}
+
+/* Language-specific font utilities */
+.font-arabic {
+  font-family: var(--theme-font-family-arabic);
+}
+
+.font-english {
+  font-family: var(--theme-font-family);
+}
+
+/* RTL-specific typography adjustments */
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6 {
+  font-family: var(--theme-font-family-arabic);
+  letter-spacing: 0.025em;
+}
+
+[dir="rtl"] p,
+[dir="rtl"] span,
+[dir="rtl"] div {
+  font-family: var(--theme-font-family-arabic);
+}
+
+/* Enhanced Arabic text rendering */
+.text-arabic {
+  font-family: var(--theme-font-family-arabic);
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Theme-aware components */
+.theme-card {
+  background-color: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--theme-radius-lg);
+  padding: var(--theme-spacing-lg);
+  box-shadow: var(--theme-shadow-md);
+  transition: all var(--theme-animation-duration) var(--theme-animation-easing);
+}
+
+.theme-button {
+  background-color: var(--theme-primary);
+  color: var(--theme-background);
+  border-radius: var(--theme-radius-md);
+  padding: var(--theme-spacing-sm) var(--theme-spacing-md);
+  font-weight: var(--theme-font-weight-medium);
+  box-shadow: var(--theme-shadow-sm);
+  transition: all var(--theme-animation-duration) var(--theme-animation-easing);
+}
+
+.theme-button:hover {
+  box-shadow: var(--theme-shadow-glow);
+}
+pre {
+  direction: ltr;
+  background-color: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--theme-radius-md);
+  padding: var(--theme-spacing-md);
+}
+
+/* Add to your global CSS */ /* Optional: Visual indicators for restricted elements */

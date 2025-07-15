@@ -1,0 +1,327 @@
+{
+  "welcome": "Welcome",
+  "home": "Home",
+  "language": "Language",
+  "theme": {
+    "switch": "Switch theme",
+    "light": "Light theme",
+    "dark": "Dark theme",
+    "auto": "Auto theme"
+  },
+  "loading": "Loading...",
+  "loadingContent": "Loading content...",
+  "loadingPage": "Loading page...",
+  "hello_world": "Hello World",
+  "description": "This is a multilingual personal website with language detection.",
+  "profile": {
+    "placeholder": "Profile Image",
+    "imageAlt": "Profile photo",
+    "name": "Your Name",
+    "title": "Full Stack Developer",
+    "bio": "Passionate developer creating modern web applications with cutting-edge technologies.",
+    "stats": {
+      "projects": "50+",
+      "projectsLabel": "Projects",
+      "experience": "5+",
+      "experienceLabel": "Years",
+      "clients": "20+",
+      "clientsLabel": "Clients"
+    }
+  },
+  "features": {
+    "multilingual": "Multilingual",
+    "multilingualDesc": "Full support for multiple languages with automatic detection",
+    "responsive": "Responsive Design",
+    "responsiveDesc": "Optimized for all devices from mobile to desktop",
+    "darkMode": "Dark Mode",
+    "darkModeDesc": "Beautiful dark and light themes with system preference detection"
+  },
+  "cta": {
+    "title": "Let's Connect",
+    "description": "Interested in working together or just want to say hello? Feel free to reach out!",
+    "contact": "Get In Touch",
+    "learnMore": "Learn More"
+  },
+  "switch_language": "Switch Language",
+  "current_language": "Current Language",
+  "brand": "Your Name",
+  "site_logo": "Site Logo",
+  "main_navigation": "Main Navigation",
+  "site": {
+    "title": "Your Personal Website"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "aboutFullDesc": "Learn more about me and my background",
+    "projects": "Projects",
+    "blog": "Blog", 
+    "contact": "Contact",
+    "contactFullDesc": "Get in touch with me",
+    "main": "Main Navigation",
+    "mobile": "Mobile Navigation",
+    "menu": "Menu",
+    "close": "Close Menu"
+  },
+  "navigation": {
+    "home": "Home",
+    "blog": "Blog"
+  },
+  "menu": {
+    "toggle": "Toggle menu",
+    "open": "Open menu",
+    "close": "Close menu"
+  },
+  "footer": {
+    "description": "A modern multilingual personal website with RTL support and internationalization.",
+    "quickLinks": "Quick Links",
+    "connect": "Connect",
+    "followOn": "Follow us on",
+    "email": "Email us",
+    "copyright": "© {year} Your Name. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "language": "Language",
+    "direction": "Direction",
+    "social": {
+      "telegram": "Follow us on Telegram",
+      "twitter": "Follow us on Twitter",
+      "tiktok": "Follow us on TikTok"
+    },
+    "terms": "Terms of Service",
+    "madeWith": "Made with",
+    "using": "using"
+  },
+  "social": {
+    "telegram": {
+      "text": "Telegram",
+      "label": "Follow on Telegram"
+    },
+    "twitter": {
+      "text": "Twitter",
+      "label": "Follow on Twitter"
+    },
+    "tiktok": {
+      "text": "TikTok",
+      "label": "Follow on TikTok"
+    },
+    "email": {
+      "text": "Email",
+      "label": "Send email"
+    },
+    "linkedin": {
+      "text": "LinkedIn",
+      "label": "Connect on LinkedIn"
+    }
+  },
+  "meta": {
+    "description": "Personal website of a passionate full stack developer creating modern web applications with cutting-edge technologies. Expert in Nuxt.js, Vue.js, and modern web development.",
+    "keywords": "full stack developer, web developer, Nuxt.js, Vue.js, JavaScript, TypeScript, frontend, backend, web applications",
+    "author": "Your Name",
+    "home": {
+      "title": "Home",
+      "description": "Welcome to my personal website. I'm a passionate full stack developer creating modern web applications."
+    },
+    "about": {
+      "title": "About",
+      "description": "Learn more about my background, experience, and passion for web development."
+    },
+    "projects": {
+      "title": "Projects",
+      "description": "Explore my portfolio of projects showcasing modern web development skills and technologies."
+    },
+    "blog": {
+      "title": "Blog",
+      "description": "Read my thoughts and articles on web development, technology, and programming best practices."
+    },
+    "contact": {
+      "title": "Contact",
+      "description": "Get in touch with me for collaboration opportunities or just to say hello."
+    }
+  },
+  "seo": {
+    "description": "Personal website of a passionate full stack developer creating modern web applications with cutting-edge technologies. Expert in Nuxt.js, Vue.js, and modern web development.",
+    "keywords": "full stack developer, web developer, Nuxt.js, Vue.js, JavaScript, TypeScript, frontend, backend, web applications"
+  },
+  "rtl_test": {
+    "title": "RTL Layout Test",
+    "description": "This page tests various RTL (Right-to-Left) layout features",
+    "text_alignment": "Text Alignment",
+    "start_aligned": "This text is aligned to the start (left in LTR, right in RTL)",
+    "end_aligned": "This text is aligned to the end (right in LTR, left in RTL)",
+    "center_aligned": "This text is center aligned",
+    "flexbox_layout": "Flexbox Layout",
+    "item": "Item",
+    "start": "Start",
+    "end": "End",
+    "spacing": "Margins and Padding",
+    "margin_start": "Margin at start",
+    "margin_end": "Margin at end",
+    "padding_start": "Padding at start",
+    "padding_end": "Padding at end",
+    "icons": "Icons and Directional Elements",
+    "arrow_icon": "Arrow icon",
+    "chevron_icon": "Chevron icon",
+    "grid_layout": "Grid Layout",
+    "form_elements": "Form Elements",
+    "text_input": "Text Input",
+    "textarea": "Textarea",
+    "placeholder": "Enter text here...",
+    "checkbox_label": "I agree to the terms",
+    "borders": "Borders",
+    "border_start": "Border at start",
+    "border_end": "Border at end",
+    "mixed_content": "Mixed Language Content",
+    "mixed_text": "This is English text mixed with some numbers 123 and special characters"
+  },
+  "hero": {
+    "greeting": "Hello, I'm",
+    "name": "Your Name",
+    "subtitle": "Full-Stack Developer & UI/UX Designer",
+    "description": "Creating innovative digital experiences with modern technologies",
+    "viewWork": "View My Work",
+    "getInTouch": "Get In Touch"
+  },
+  "projects": {
+    "title": "Featured Projects",
+    "description": "Explore my latest work and technical achievements",
+    "filters": {
+      "all": "All Projects",
+      "web": "Web Development",
+      "mobile": "Mobile Apps",
+      "api": "API & Backend",
+      "ui": "UI/UX Design",
+      "tools": "Tools & Utilities"
+    },
+    "demo": "Live Demo",
+    "code": "Code",
+    "loadMore": "Load More Projects",
+    "status": {
+      "completed": "Completed",
+      "in-progress": "In Progress",
+      "archived": "Archived"
+    }
+  },
+  "skills": {
+    "title": "Skills & Technologies",
+    "description": "Technologies I work with and expertise levels",
+    "categories": {
+      "frontend": "Frontend Development",
+      "backend": "Backend Development",
+      "devops": "DevOps & Cloud",
+      "design": "Design & UX"
+    },
+    "levels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "expert": "Expert"
+    },
+    "techCloud": "Technologies I Use",
+    "certifications": "Certifications"
+  },
+  "about": {
+    "title": "About Me",
+    "subtitle": "Passionate developer crafting digital experiences",
+    "status": "Available for projects",
+    "contact": "Get in Touch",
+    "downloadCV": "Download CV",
+    "bio": {
+      "paragraph1": "Hello! I'm a passionate full-stack developer with over 5 years of experience creating innovative digital solutions. I specialize in modern web technologies and have a deep love for clean, efficient code.",
+      "paragraph2": "My journey in development started with a curiosity about how things work under the hood. Today, I work with cutting-edge technologies like Vue.js, React, Node.js, and Python to build scalable applications that solve real-world problems.",
+      "paragraph3": "When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or sharing knowledge with the developer community through writing and speaking."
+    },
+    "stats": {
+      "experience": "Years Experience",
+      "projects": "Projects Completed",
+      "technologies": "Technologies",
+      "satisfaction": "Client Satisfaction"
+    },
+    "services": {
+      "title": "What I Do",
+      "frontend": {
+        "title": "Frontend Development",
+        "description": "Creating responsive, interactive user interfaces with modern frameworks like Vue.js and React."
+      },
+      "backend": {
+        "title": "Backend Development",
+        "description": "Building robust server-side applications and APIs with Node.js, Python, and cloud technologies."
+      },
+      "mobile": {
+        "title": "Mobile Applications",
+        "description": "Developing cross-platform mobile apps with React Native and native technologies."
+      },
+      "devops": {
+        "title": "DevOps & Deployment",
+        "description": "Implementing CI/CD pipelines, containerization, and cloud deployment strategies."
+      },
+      "ui-ux": {
+        "title": "UI/UX Design",
+        "description": "Designing intuitive user experiences and modern interfaces with Figma and design systems."
+      },
+      "consulting": {
+        "title": "Technical Consulting",
+        "description": "Providing technical guidance, architecture reviews, and development strategy consulting."
+      }
+    },
+    "social": {
+      "title": "Connect With Me"
+    }
+  },
+  "contact": {
+    "title": "Let's Work Together",
+    "description": "Ready to bring your ideas to life? Let's discuss your next project.",
+    "email": "Send Email",
+    "schedule": "Schedule Meeting"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to main content"
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Discover insights, tutorials, and thoughts on modern web development, technology trends, and creative solutions.",
+    "readMore": "Read More",
+    "read": "Read",
+    "featured": "Featured",
+    "searchPlaceholder": "Search articles...",
+    "articlesCount": "Articles",
+    "categoriesCount": "Categories", 
+    "articles": "Articles",
+    "viewMode": "View",
+    "viewModes": {
+      "magazine": "Magazine",
+      "magazineDesc": "Rich magazine-style layout with large featured images",
+      "card": "Cards",
+      "cardDesc": "Clean card layout with consistent sizing",
+      "list": "List",
+      "listDesc": "Compact list view with small thumbnails",
+      "minimal": "Minimal",
+      "minimalDesc": "Clean text-focused minimal layout"
+    },
+    "resultsFound": "Search results for {count} article(s)",
+    "noResults": "No matching results found",
+    "clearAll": "Clear All",
+    "readingTime": "Reading Time",
+    "dateRange": "Date Range",
+    "sortBy": "Sort by",
+    "category": "Category",
+    "tags": "Tags",
+    "allCategories": "All Categories",
+    "selectTags": "Select tags...",
+    "advancedSearch": "Advanced",
+    "suggestions": "Suggestions",
+    "saveSearch": "Save Search",
+    "view": "View",
+    "noPostsTitle": "No Articles Yet",
+    "noPostsDescription": "Check back soon for new articles and insights.",
+    "backHome": "Back to Home",
+    "backToBlog": "Back to Blog",
+    "notFound": "Article Not Found",
+    "notFoundDescription": "The article you are looking for does not exist or has been moved.",
+    "loading": "Loading article...",
+    "featuredImage": "Featured image for this article",
+    "shareArticle": "Share this article",
+    "tableOfContents": "Table of Contents",
+    "relatedArticles": "Related Articles",
+    "editOnGitHub": "Edit on GitHub"
+  }
+}
