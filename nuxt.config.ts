@@ -153,8 +153,15 @@ export default defineNuxtConfig({
     // Prerender configuration optimized for CI/CD
     prerender: {
       crawlLinks: true,
-      failOnError: false,
-      routes: ['/'],
+      failOnError: true,
+      routes: [
+        '/',        // Arabic homepage (default)
+        '/en',      // English homepage
+        '/about',   // Arabic about page
+        '/en/about',// English about page
+        '/contact', // Arabic contact page
+        '/en/contact' // English contact page
+      ],
       ignore: ['/admin/**', '/api/**']
     },
     // ISR (Incremental Static Regeneration) configuration
