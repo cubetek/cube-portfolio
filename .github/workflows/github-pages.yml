@@ -1,0 +1,199 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
+  PNPM_VERSION: 8
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          pnpm install --frozen-lockfile
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          static_site_generator: nuxt
+
+      - name: Build with Nuxt for GitHub Pages
+        run: |
+          echo "Building Nuxt app for GitHub Pages..."
+          echo "Site URL: ${{ steps.pages.outputs.base_url }}"
+          echo "Base path: ${{ steps.pages.outputs.base_path }}"
+          echo "Using github-pages script for static generation..."
+          
+          # Try github-pages script first, fallback to generate if needed
+          if pnpm run github-pages; then
+            echo "✅ Build successful with github-pages script"
+          else
+            echo "⚠️  github-pages script failed, trying fallback..."
+            echo "Running standard generate command..."
+            pnpm run generate
+          fi
+        env:
+          NUXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
+          NUXT_APP_BASE_URL: ${{ steps.pages.outputs.base_path }}
+          NUXT_PRESET: static
+          NODE_ENV: production
+
+      - name: Verify build output
+        run: |
+          echo "Verifying build output..."
+          
+          # Check for .output/public directory
+          if [ -d ".output/public" ]; then
+            echo "✅ Build output directory exists"
+            OUTPUT_DIR=".output/public"
+          # Fallback to dist directory if it exists
+          elif [ -d "dist" ]; then
+            echo "✅ Using dist directory as output"
+            OUTPUT_DIR="dist"
+          else
+            echo "❌ No build output directory found"
+            echo "Available directories:"
+            ls -la
+            echo "Checking for any generated files..."
+            find . -name "*.html" -not -path "./node_modules/*" || echo "No HTML files found"
+            exit 1
+          fi
+          
+          echo "Output directory: $OUTPUT_DIR"
+          echo "Directory contents:"
+          ls -la "$OUTPUT_DIR"
+          
+          # Count files
+          TOTAL_FILES=$(find "$OUTPUT_DIR" -type f | wc -l)
+          HTML_FILES=$(find "$OUTPUT_DIR" -name "*.html" | wc -l)
+          echo "Total files generated: $TOTAL_FILES"
+          echo "HTML files generated: $HTML_FILES"
+          
+          # Check for essential files
+          if [ -f "$OUTPUT_DIR/index.html" ]; then
+            echo "✅ Homepage (Arabic) exists"
+          else
+            echo "❌ Homepage (Arabic) missing"
+            exit 1
+          fi
+          
+          if [ -f "$OUTPUT_DIR/en/index.html" ]; then
+            echo "✅ English homepage exists"
+          else
+            echo "⚠️  English homepage missing"
+          fi
+          
+          # Check for other important files
+          if [ -f "$OUTPUT_DIR/404.html" ]; then
+            echo "✅ 404 page exists"
+          else
+            echo "⚠️  404 page missing"
+          fi
+          
+          if [ -f "$OUTPUT_DIR/robots.txt" ]; then
+            echo "✅ Robots.txt exists"
+          else
+            echo "⚠️  Robots.txt missing"
+          fi
+          
+          # Store OUTPUT_DIR for upload step
+          echo "OUTPUT_DIR=$OUTPUT_DIR" >> $GITHUB_ENV
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./${{ env.OUTPUT_DIR }}
+
+      - name: Upload build artifacts for debugging
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-debug
+          path: |
+            .nuxt
+            .output
+            package.json
+            nuxt.config.ts
+            *.log
+          retention-days: 1
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "🎉 Deployment successful!"
+          echo "Site URL: ${{ steps.deployment.outputs.page_url }}"
+          echo "The site is now available at the above URL"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Please check the logs above for more details"
+          echo "Common issues:"
+          echo "1. Check if GitHub Pages is enabled in repository settings"
+          echo "2. Verify the build output contains valid HTML files"
+          echo "3. Check if the artifact was uploaded correctly"
