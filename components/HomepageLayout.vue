@@ -1,9 +1,9 @@
 <template>
-  <div class="homepage-layout">
+  <div class="min-h-screen">
     <!-- Skip to content link for accessibility -->
     <a 
       href="#main-content" 
-      class="skip-link"
+      class="fixed top-0 left-2 -translate-y-full bg-primary-600 text-white px-4 py-2 rounded-md font-medium z-50 transition-transform duration-300 focus:translate-y-2"
       @click="skipToContent"
     >
       {{ $t('accessibility.skipToContent') || 'Skip to main content' }}
@@ -12,42 +12,51 @@
     <!-- Hero Section -->
     <section 
       id="hero" 
-      class="hero-section"
-      :class="{ 'reduce-motion': prefersReducedMotion }"
+      class="min-h-screen flex items-center bg-gradient-to-br from-primary-50 to-primary-100 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden"
+      :class="{ 'motion-reduce:animate-none': prefersReducedMotion }"
       aria-labelledby="hero-title"
     >
-      <div class="hero-container">
-        <div class="hero-content">
-          <h1 id="hero-title" class="hero-title">
-            <span class="hero-greeting">
-              {{ $t('hero.greeting') || 'Hello, I\'m' }}
-            </span>
-            <span class="hero-name">{{ $t('hero.name') || 'Your Name' }}</span>
-          </h1>
-          <p class="hero-subtitle">
-            {{ $t('hero.subtitle') || 'Full-Stack Developer & UI/UX Designer' }}
-          </p>
-          <p class="hero-description">
-            {{ $t('hero.description') || 'Creating innovative digital experiences with modern technologies' }}
-          </p>
+      <!-- Background gradient animation -->
+      <div 
+        class="absolute inset-0 opacity-100 motion-reduce:opacity-70"
+        :class="!prefersReducedMotion ? 'animate-pulse' : ''"
+        style="background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%)"
+      />
+      
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10">
+        <div class="flex flex-col gap-8 text-center lg:text-start order-2 lg:order-1">
+          <div class="space-y-4">
+            <h1 id="hero-title" class="space-y-2">
+              <span class="block text-xl sm:text-2xl text-gray-600 dark:text-gray-400 font-medium">
+                {{ $t('hero.greeting') || 'Hello, I\'m' }}
+              </span>
+              <span class="block text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
+                {{ $t('hero.name') || 'Your Name' }}
+              </span>
+            </h1>
+            <p class="text-xl sm:text-2xl text-primary-700 dark:text-primary-400 font-semibold">
+              {{ $t('hero.subtitle') || 'Full-Stack Developer & UI/UX Designer' }}
+            </p>
+            <p class="text-lg text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              {{ $t('hero.description') || 'Creating innovative digital experiences with modern technologies' }}
+            </p>
+          </div>
           
-          <div class="hero-actions">
+          <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <UButton
-              to="#projects"
               size="lg"
-              variant="solid"
               color="primary"
-              class="hero-btn"
+              variant="solid"
+              class="min-w-40"
               @click="scrollToSection('projects')"
             >
               {{ $t('hero.viewWork') || 'View My Work' }}
             </UButton>
             <UButton
-              to="#contact"
               size="lg"
-              variant="outline"
               color="primary"
-              class="hero-btn"
+              variant="outline"
+              class="min-w-40"
               @click="scrollToSection('contact')"
             >
               {{ $t('hero.getInTouch') || 'Get In Touch' }}
@@ -55,15 +64,15 @@
           </div>
         </div>
         
-        <div class="hero-visual">
-          <div class="hero-image-container">
-            <NuxtImg
-              src="/images/hero-illustration.svg"
+        <div class="flex justify-center items-center order-1 lg:order-2">
+          <div class="relative w-full max-w-lg">
+            <img
+              src="/illustration/team-bro.svg"
               alt="Developer illustration"
-              class="hero-image"
-              :data-critical="true"
+              class="w-full h-auto object-contain"
+              :class="!prefersReducedMotion ? 'animate-bounce' : ''"
               loading="eager"
-              fetchpriority="high"
+              style="animation-duration: 6s;"
             />
           </div>
         </div>
@@ -71,15 +80,15 @@
     </section>
 
     <!-- Main Content -->
-    <main id="main-content" class="main-content">
+    <main id="main-content" class="relative z-10">
       <!-- About Section -->
       <section 
         id="about" 
-        class="content-section"
+        class="py-16 lg:py-24"
         aria-labelledby="about-title"
         v-intersection-observer="onSectionIntersection"
       >
-        <div class="section-container">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <LazyAboutSection />
         </div>
       </section>
@@ -87,11 +96,11 @@
       <!-- Skills Section -->
       <section 
         id="skills" 
-        class="content-section"
+        class="py-16 lg:py-24 bg-gray-50 dark:bg-gray-800"
         aria-labelledby="skills-title"
         v-intersection-observer="onSectionIntersection"
       >
-        <div class="section-container">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <LazySkillsDisplay />
         </div>
       </section>
@@ -99,11 +108,11 @@
       <!-- Projects Section -->
       <section 
         id="projects" 
-        class="content-section"
+        class="py-16 lg:py-24"
         aria-labelledby="projects-title"
         v-intersection-observer="onSectionIntersection"
       >
-        <div class="section-container">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <LazyProjectsShowcase />
         </div>
       </section>
@@ -111,28 +120,32 @@
       <!-- Contact Section -->
       <section 
         id="contact" 
-        class="content-section"
+        class="py-16 lg:py-24 bg-gray-50 dark:bg-gray-800"
         aria-labelledby="contact-title"
         v-intersection-observer="onSectionIntersection"
       >
-        <div class="section-container">
-          <div class="contact-content">
-            <h2 id="contact-title" class="section-title">
-              {{ $t('contact.title') || 'Let\'s Work Together' }}
-            </h2>
-            <p class="section-description">
-              {{ $t('contact.description') || 'Ready to bring your ideas to life? Let\'s discuss your next project.' }}
-            </p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <UCard class="max-w-4xl mx-auto">
+            <template #header>
+              <div class="text-center">
+                <h2 id="contact-title" class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                  {{ $t('contact.title') || 'Let\'s Work Together' }}
+                </h2>
+                <p class="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {{ $t('contact.description') || 'Ready to bring your ideas to life? Let\'s discuss your next project.' }}
+                </p>
+              </div>
+            </template>
             
-            <div class="contact-actions">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
               <UButton
                 to="mailto:contact@example.com"
                 size="lg"
-                variant="solid"
                 color="primary"
-                class="contact-btn"
+                variant="solid"
+                icon="i-heroicons-envelope"
+                class="min-w-48"
               >
-                <UIcon name="i-heroicons-envelope" />
                 {{ $t('contact.email') || 'Send Email' }}
               </UButton>
               
@@ -140,52 +153,53 @@
                 to="https://calendly.com/username"
                 target="_blank"
                 size="lg"
-                variant="outline"
                 color="primary"
-                class="contact-btn"
+                variant="outline"
+                icon="i-heroicons-calendar"
+                class="min-w-48"
               >
-                <UIcon name="i-heroicons-calendar" />
                 {{ $t('contact.schedule') || 'Schedule Meeting' }}
               </UButton>
             </div>
-          </div>
+          </UCard>
         </div>
       </section>
     </main>
 
     <!-- Performance metrics display (development only) -->
-    <div 
-      v-if="isDevelopment" 
-      class="performance-metrics"
+    <UCard 
+      v-if="unref(isDevelopment)" 
+      class="fixed bottom-5 end-5 max-w-xs z-50"
       aria-label="Performance metrics"
     >
-      <details class="metrics-details">
-        <summary class="metrics-summary">Performance Metrics</summary>
-        <div class="metrics-content">
-          <div class="metric-item">
-            <span class="metric-label">LCP:</span>
-            <span class="metric-value">{{ metrics.lcp || 'N/A' }}ms</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">FCP:</span>
-            <span class="metric-value">{{ metrics.fcp || 'N/A' }}ms</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">Memory:</span>
-            <span class="metric-value">{{ formatBytes(memoryUsage) }}</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">Bundle:</span>
-            <span class="metric-value">{{ formatBytes(bundleSize) }}</span>
-          </div>
+      <template #header>
+        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Performance Metrics</h3>
+      </template>
+      
+      <div class="space-y-2">
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-gray-600 dark:text-gray-400 font-medium">LCP:</span>
+          <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ metrics.lcp || 'N/A' }}ms</span>
         </div>
-      </details>
-    </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-gray-600 dark:text-gray-400 font-medium">FCP:</span>
+          <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ metrics.fcp || 'N/A' }}ms</span>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-gray-600 dark:text-gray-400 font-medium">Memory:</span>
+          <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ formatBytes(memoryUsage) }}</span>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-gray-600 dark:text-gray-400 font-medium">Bundle:</span>
+          <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ formatBytes(bundleSize) }}</span>
+        </div>
+      </div>
+    </UCard>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, computed, nextTick, unref } from 'vue'
 import { usePerformanceOptimization } from '~/composables/usePerformance'
 import { useAccessibility } from '~/composables/useAccessibility'
 import { useIntersectionObserver } from '~/composables/usePerformance'
@@ -194,7 +208,7 @@ import { useIntersectionObserver } from '~/composables/usePerformance'
 const LazyAboutSection = defineAsyncComponent(() => import('~/components/AboutSection.vue'))
 const LazySkillsDisplay = defineAsyncComponent(() => import('~/components/SkillsDisplay.vue'))
 const LazyProjectsShowcase = defineAsyncComponent(() => import('~/components/ProjectsShowcase.vue'))
-
+const app = computed(() => useAppConfig())
 // Composables
 const { 
   metrics, 
@@ -219,7 +233,7 @@ const {
 })
 
 // Environment check
-const isDevelopment = computed(() => process.env.NODE_ENV === 'development')
+const isDevelopment = ref(process.env.NODE_ENV === 'development')
 
 // Intersection observer for animations
 const visibleSections = ref<Set<string>>(new Set())
@@ -296,7 +310,7 @@ const formatBytes = (bytes: number) => {
 
 // SEO and meta
 useHead({
-  title: 'Homepage - Your Name',
+  title: `Homepage -${app.value.metadata.author}`,
   meta: [
     {
       name: 'description',
@@ -326,8 +340,7 @@ onMounted(async () => {
   initializeAccessibility()
   
   // Preload critical images
-  await preloadImage('/images/hero-illustration.svg', 'high')
-  await preloadImage('/images/profile.jpg', 'high')
+  await preloadImage('/images/profile.png', 'high')
   
   // Report initial metrics
   if (isDevelopment.value) {
@@ -340,424 +353,53 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Skip link styles */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 6px;
-  background: var(--color-primary-600);
-  color: var(--color-white);
-  padding: 8px 16px;
-  text-decoration: none;
-  border-radius: 4px;
-  font-weight: 500;
-  z-index: 1000;
-  transition: top 0.3s ease;
-}
+/* Only custom styles that cannot be achieved with Tailwind */
 
-.skip-link:focus {
-  top: 6px;
-}
-
-/* Homepage layout */
-.homepage-layout {
-  min-height: 100vh;
-  position: relative;
-}
-
-/* Hero section */
-.hero-section {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  background: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-primary-100) 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%);
-  animation: gradientShift 10s ease-in-out infinite;
-}
-
-.hero-section.reduce-motion::before {
-  animation: none;
-}
-
-@keyframes gradientShift {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-.hero-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-}
-
-.hero-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.hero-title {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.hero-greeting {
-  font-size: 1.5rem;
-  color: var(--color-gray-600);
-  font-weight: 500;
-}
-
-.hero-name {
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  font-weight: 700;
-  color: var(--color-gray-900);
-  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-800));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero-subtitle {
-  font-size: 1.5rem;
-  color: var(--color-primary-700);
-  font-weight: 600;
-}
-
-.hero-description {
-  font-size: 1.125rem;
-  color: var(--color-gray-600);
-  line-height: 1.6;
-  max-width: 500px;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.hero-btn {
-  min-width: 160px;
-}
-
-.hero-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.hero-image-container {
-  position: relative;
-  width: 100%;
-  max-width: 500px;
-}
-
-.hero-image {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  animation: float 6s ease-in-out infinite;
-}
-
-.hero-section.reduce-motion .hero-image {
-  animation: none;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-}
-
-/* Main content */
-.main-content {
-  position: relative;
-  z-index: 1;
-}
-
-.content-section {
-  padding: 4rem 0;
-  position: relative;
-}
-
-.content-section:nth-child(even) {
-  background: var(--color-gray-50);
-}
-
-.section-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-/* Contact section */
-.contact-content {
-  text-align: center;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.section-title {
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700;
-  color: var(--color-gray-900);
-  margin-bottom: 1rem;
-}
-
-.section-description {
-  font-size: 1.125rem;
-  color: var(--color-gray-600);
-  margin-bottom: 2rem;
-  line-height: 1.6;
-}
-
-.contact-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.contact-btn {
-  min-width: 180px;
-}
-
-/* Performance metrics (development only) */
-.performance-metrics {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: var(--color-white);
-  border: 1px solid var(--color-gray-200);
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  max-width: 250px;
-}
-
-.metrics-details {
-  margin: 0;
-}
-
-.metrics-summary {
-  padding: 12px 16px;
-  font-weight: 500;
-  color: var(--color-gray-700);
-  cursor: pointer;
-  user-select: none;
-}
-
-.metrics-content {
-  padding: 0 16px 16px;
-  border-top: 1px solid var(--color-gray-200);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.metric-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.875rem;
-}
-
-.metric-label {
-  color: var(--color-gray-600);
-  font-weight: 500;
-}
-
-.metric-value {
-  color: var(--color-gray-900);
-  font-weight: 600;
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .hero-section {
-    background: linear-gradient(135deg, var(--color-gray-900) 0%, var(--color-gray-800) 100%);
-  }
-  
-  .hero-greeting {
-    color: var(--color-gray-400);
-  }
-  
-  .hero-name {
-    color: var(--color-gray-100);
-  }
-  
-  .hero-subtitle {
-    color: var(--color-primary-400);
-  }
-  
-  .hero-description {
-    color: var(--color-gray-400);
-  }
-  
-  .section-title {
-    color: var(--color-gray-100);
-  }
-  
-  .section-description {
-    color: var(--color-gray-400);
-  }
-  
-  .content-section:nth-child(even) {
-    background: var(--color-gray-800);
-  }
-  
-  .performance-metrics {
-    background: var(--color-gray-800);
-    border-color: var(--color-gray-700);
-  }
-  
-  .metrics-summary {
-    color: var(--color-gray-300);
-  }
-  
-  .metrics-content {
-    border-color: var(--color-gray-700);
-  }
-  
-  .metric-label {
-    color: var(--color-gray-400);
-  }
-  
-  .metric-value {
-    color: var(--color-gray-100);
-  }
-}
-
-/* RTL support */
+/* RTL support for animations - direction aware */
 [dir="rtl"] .hero-container {
-  grid-template-columns: 1fr 1fr;
-}
-
-[dir="rtl"] .hero-content {
-  text-align: right;
-}
-
-[dir="rtl"] .hero-actions {
-  flex-direction: row-reverse;
-}
-
-[dir="rtl"] .contact-actions {
-  flex-direction: row-reverse;
+  direction: ltr; /* Keep animations consistent */
 }
 
 [dir="rtl"] .performance-metrics {
-  left: 20px;
+  left: 1.25rem;
   right: auto;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .hero-container {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    text-align: center;
-  }
-  
-  .hero-content {
-    order: 2;
-  }
-  
-  .hero-visual {
-    order: 1;
-  }
-  
-  .hero-actions {
-    justify-content: center;
-  }
-  
-  .contact-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .contact-btn {
-    width: 100%;
-    max-width: 300px;
-  }
-  
-  .performance-metrics {
-    position: relative;
-    bottom: auto;
-    right: auto;
-    margin: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-container {
-    padding: 0 1rem;
-  }
-  
-  .section-container {
-    padding: 0 1rem;
-  }
-  
-  .hero-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .hero-btn {
-    width: 100%;
-    max-width: 300px;
-  }
-}
-
-/* High contrast mode */
-@media (prefers-contrast: high) {
-  .hero-section {
-    background: var(--color-white);
-  }
-  
-  .hero-name {
-    background: none;
-    -webkit-background-clip: unset;
-    -webkit-text-fill-color: unset;
-    background-clip: unset;
-    color: var(--color-black);
-  }
 }
 
 /* Print styles */
 @media print {
   .hero-section {
-    background: none;
-    min-height: auto;
-    padding: 2rem 0;
+    background: none !important;
+    min-height: auto !important;
+    padding: 2rem 0 !important;
   }
   
   .hero-actions,
   .contact-actions,
   .performance-metrics {
-    display: none;
+    display: none !important;
   }
   
   .hero-image {
-    display: none;
+    display: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .bg-gradient-to-br {
+    background: white !important;
+  }
+  
+  .bg-gradient-to-r {
+    background: black !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+    background-clip: unset !important;
+    color: black !important;
+  }
+  
+  .dark .bg-gradient-to-r {
+    color: white !important;
   }
 }
 </style>

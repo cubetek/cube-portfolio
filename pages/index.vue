@@ -1,50 +1,6 @@
 <template>
   <div>
-    <!-- Enhanced Homepage Layout with all Task 2 implementations -->
     <HomepageLayout />
-    
-    <!-- Development Language Switcher (hidden in production) -->
-    <div v-if="isDevelopment" class="dev-tools">
-      <UContainer class="py-8">
-        <div class="max-w-4xl mx-auto text-center">
-          <div class="mb-8">
-            <SimpleLanguageSwitcher />
-          </div>
-          
-          <!-- Language & Tech Info Card -->
-          <UCard class="max-w-2xl mx-auto">
-            <template #header>
-              <div class="flex items-center justify-center gap-2">
-                <UIcon name="i-heroicons-globe-alt" class="w-5 h-5" />
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                  {{ langInfoTitle }}
-                </h3>
-              </div>
-            </template>
-            
-            <div class="space-y-3 text-sm text-gray-600 dark:text-gray-400">
-              <div class="flex justify-between">
-                <span><strong>{{ $t('current_language') }}:</strong></span>
-                <span>{{ currentLocale }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span><strong>{{ $t('footer.direction') }}:</strong></span>
-                <span>{{ directionAttr }}</span>
-              </div>
-              <div class="text-center pt-2">
-                <span><strong>{{ availableLocalesTitle }}:</strong></span>
-                <div class="mt-1">
-                  <span v-for="(locale, index) in availableLocales" :key="locale.code">
-                    {{ locale.name }}
-                    <span v-if="index < availableLocales.length - 1">, </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </UCard>
-        </div>
-      </UContainer>
-    </div>
   </div>
 </template>
 

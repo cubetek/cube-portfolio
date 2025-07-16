@@ -1,5 +1,4 @@
 import { ref, computed, watch, onMounted } from 'vue'
-import type { MaybeRef } from '@vueuse/core'
 
 export interface ThemeConfig {
   name: string
@@ -48,126 +47,7 @@ const themes: Record<string, ThemeConfig> = {
       border: '#334155'
     }
   },
-  modern: {
-    name: 'modern',
-    label: 'Modern',
-    description: 'Contemporary purple and orange theme',
-    category: 'light',
-    colors: {
-      primary: '#8b5cf6',
-      secondary: '#6b7280',
-      accent: '#f59e0b',
-      background: '#fafafa',
-      surface: '#f4f4f5',
-      text: '#1f2937',
-      border: '#e4e4e7'
-    }
-  },
-  minimal: {
-    name: 'minimal',
-    label: 'Minimal',
-    description: 'Clean and minimal design',
-    category: 'light',
-    colors: {
-      primary: '#6b7280',
-      secondary: '#9ca3af',
-      accent: '#059669',
-      background: '#ffffff',
-      surface: '#f9fafb',
-      text: '#374151',
-      border: '#d1d5db'
-    }
-  },
-  ocean: {
-    name: 'ocean',
-    label: 'Ocean',
-    description: 'Blue ocean-inspired theme',
-    category: 'light',
-    colors: {
-      primary: '#0ea5e9',
-      secondary: '#64748b',
-      accent: '#06b6d4',
-      background: '#f8fafc',
-      surface: '#f1f5f9',
-      text: '#1e293b',
-      border: '#cbd5e1'
-    }
-  },
-  forest: {
-    name: 'forest',
-    label: 'Forest',
-    description: 'Natural green forest theme',
-    category: 'light',
-    colors: {
-      primary: '#059669',
-      secondary: '#6b7280',
-      accent: '#84cc16',
-      background: '#f0fdf4',
-      surface: '#ecfdf5',
-      text: '#064e3b',
-      border: '#bbf7d0'
-    }
-  },
-  matrix: {
-    name: 'matrix',
-    label: 'Matrix',
-    description: 'Hacker-style green matrix theme',
-    category: 'special',
-    colors: {
-      primary: '#00ff41',
-      secondary: '#008f11',
-      accent: '#39ff14',
-      background: '#000000',
-      surface: '#0d1117',
-      text: '#00ff41',
-      border: '#1f4f23'
-    }
-  },
-  cyberpunk: {
-    name: 'cyberpunk',
-    label: 'Cyberpunk',
-    description: 'Futuristic cyberpunk aesthetic',
-    category: 'special',
-    colors: {
-      primary: '#ff0080',
-      secondary: '#00ffff',
-      accent: '#ffff00',
-      background: '#0a0014',
-      surface: '#1a0028',
-      text: '#ff0080',
-      border: 'rgba(255, 0, 128, 0.3)'
-    }
-  },
-  neon: {
-    name: 'neon',
-    label: 'Neon',
-    description: 'Bright neon lights theme',
-    category: 'special',
-    colors: {
-      primary: '#00d4ff',
-      secondary: '#ff6b00',
-      accent: '#ff00ff',
-      background: '#0c0c0c',
-      surface: '#1a1a1a',
-      text: '#00d4ff',
-      border: 'rgba(0, 212, 255, 0.25)'
-    }
-  },
-  retro: {
-    name: 'retro',
-    label: 'Retro',
-    description: 'Vintage 80s retro theme',
-    category: 'special',
-    colors: {
-      primary: '#ff8c00',
-      secondary: '#8a2be2',
-      accent: '#ff1493',
-      background: '#2f1b69',
-      surface: '#3d2981',
-      text: '#ffd700',
-      border: '#9370db'
-    }
-  }
+
 }
 
 const STORAGE_KEY = 'nuxt-theme'
@@ -176,7 +56,7 @@ export const useTheme = () => {
   // Get app config for theme settings
   const appConfig = useAppConfig()
   const currentTheme = ref<string>(appConfig.theme?.default || 'light')
-  const isClient = process.client
+  const isClient = import.meta.client
 
   // Computed properties
   const themeConfig = computed(() => themes[currentTheme.value] || themes.light)

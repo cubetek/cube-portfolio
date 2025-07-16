@@ -91,7 +91,7 @@
             <span>{{ $t('footer.using') }}</span>
             <UButton
               variant="link"
-              color="success"
+              color="green"
               size="xs"
               to="https://nuxt.com"
               target="_blank"
@@ -107,18 +107,44 @@
 </template>
 
 <script setup lang="ts">
-// Use RTL composable for better direction handling
+// Use personal data and RTL composables
+const { profile, social, contact } = usePersonalData()
 const { rtlClass } = useRTL()
 
 // Get current year for copyright
 const currentYear = new Date().getFullYear()
 
-// Social media links (placeholder URLs as requested)
-const socialLinks = {
-  telegram: 'https://t.me/username',
-  twitter: 'https://twitter.com/username',
-  tiktok: 'https://tiktok.com/@username'
-}
+// Get primary social media links from centralized data
+const primarySocialLinks = computed(() => {
+  return social.value
+    .filter(s => s.primary)
+    .slice(0, 3) // Limit to 3 for footer display
+    .map(s => ({
+      platform: s.platform.toLowerCase(),
+      url: s.url,
+      username: s.username,
+      icon: s.icon,
+      displayName: s.displayName || s.platform
+    }))
+})
+
+// Fallback social links if no primary ones are set
+const socialLinks = computed(() => {
+  if (primarySocialLinks.value.length > 0) {
+    return {
+      telegram: primarySocialLinks.value.find(s => s.platform === 'telegram')?.url || 'https://t.me/username',
+      twitter: primarySocialLinks.value.find(s => s.platform === 'twitter')?.url || 'https://twitter.com/username',
+      tiktok: primarySocialLinks.value.find(s => s.platform === 'tiktok')?.url || 'https://tiktok.com/@username'
+    }
+  }
+  
+  // Fallback to default URLs
+  return {
+    telegram: 'https://t.me/username',
+    twitter: 'https://twitter.com/username',
+    tiktok: 'https://tiktok.com/@username'
+  }
+})
 
 // SEO and accessibility
 useHead({

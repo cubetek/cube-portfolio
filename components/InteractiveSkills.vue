@@ -51,13 +51,9 @@
           <div class="skill-header">
             <div class="skill-icon-container">
               <div class="skill-icon" :style="{ backgroundColor: skill.color + '20' }">
-                <component
-                  :is="skill.iconComponent || 'div'"
-                  :class="skill.iconClass"
-                  :style="{ color: skill.color }"
-                >
+                <div :style="{ color: skill.color }">
                   <UIcon v-if="skill.icon" :name="skill.icon" />
-                </component>
+                </div>
               </div>
               <div class="skill-level-indicator">
                 <div class="level-ring">
@@ -162,7 +158,7 @@
     </div>
 
     <!-- Skill Detail Modal -->
-    <UModal v-model="showSkillModal" :ui="{ width: 'max-w-2xl' }">
+    <UModal v-model="showSkillModal">
       <div v-if="selectedSkillData" class="skill-modal">
         <div class="modal-header">
           <div class="modal-skill-icon" :style="{ backgroundColor: selectedSkillData.color + '20' }">
@@ -241,6 +237,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import type { SkillLevel } from '~/types/personal'
 
 // Types
 interface Skill {
@@ -276,190 +273,34 @@ const showSkillModal = ref(false)
 const animatedProgress = reactive<Record<string, number>>({})
 const circumference = 2 * Math.PI * 10 // radius = 10
 
-// Skill categories data
-const skillCategories = ref<SkillCategory[]>([
-  {
-    id: 'frontend',
-    name: 'Frontend Development',
-    icon: 'i-heroicons-computer-desktop',
-    skills: [
-      {
-        id: 'vue',
-        name: 'Vue.js',
-        description: 'Progressive JavaScript framework for building user interfaces',
-        level: 'expert',
-        percentage: 95,
-        experience: '3+ years',
-        projects: 15,
-        color: '#4FC08D',
-        categoryId: 'frontend',
-        categoryName: 'Frontend Development',
-        tags: ['Vue 3', 'Composition API', 'Pinia', 'Router', 'SSR'],
-        achievements: [
-          'Built 15+ production applications',
-          'Contributed to Vue.js ecosystem',
-          'Vue.js certified developer',
-          'Created reusable component libraries'
-        ],
-        icon: 'i-simple-icons-vuedotjs'
-      },
-      {
-        id: 'nuxt',
-        name: 'Nuxt 3',
-        description: 'Full-stack Vue framework with server-side rendering',
-        level: 'expert',
-        percentage: 90,
-        experience: '2+ years',
-        projects: 8,
-        color: '#00DC82',
-        categoryId: 'frontend',
-        categoryName: 'Frontend Development',
-        tags: ['SSR', 'SSG', 'Nitro', 'Auto-imports', 'File-based routing'],
-        achievements: [
-          'Early adopter of Nuxt 3',
-          'Performance optimized applications',
-          'SEO-focused implementations',
-          'Multilingual site architecture'
-        ],
-        icon: 'i-simple-icons-nuxtdotjs'
-      },
-      {
-        id: 'react',
-        name: 'React',
-        description: 'JavaScript library for building user interfaces',
-        level: 'advanced',
-        percentage: 85,
-        experience: '2+ years',
-        projects: 12,
-        color: '#61DAFB',
-        categoryId: 'frontend',
-        categoryName: 'Frontend Development',
-        tags: ['Hooks', 'Context', 'Next.js', 'Redux', 'Testing Library'],
-        achievements: [
-          'Built scalable React applications',
-          'Implemented complex state management',
-          'Created custom hooks library',
-          'Migration from class to functional components'
-        ],
-        icon: 'i-simple-icons-react'
-      },
-      {
-        id: 'typescript',
-        name: 'TypeScript',
-        description: 'Typed superset of JavaScript for large-scale applications',
-        level: 'expert',
-        percentage: 92,
-        experience: '3+ years',
-        projects: 20,
-        color: '#3178C6',
-        categoryId: 'frontend',
-        categoryName: 'Frontend Development',
-        tags: ['Static Typing', 'Generics', 'Interfaces', 'Decorators', 'Advanced Types'],
-        achievements: [
-          'Migrated multiple projects to TypeScript',
-          'Created type-safe API clients',
-          'Advanced generic programming',
-          'Type-driven development advocate'
-        ],
-        icon: 'i-simple-icons-typescript'
-      }
-    ]
-  },
-  {
-    id: 'backend',
-    name: 'Backend Development',
-    icon: 'i-heroicons-server',
-    skills: [
-      {
-        id: 'nodejs',
-        name: 'Node.js',
-        description: 'JavaScript runtime for server-side development',
-        level: 'expert',
-        percentage: 88,
-        experience: '3+ years',
-        projects: 18,
-        color: '#339933',
-        categoryId: 'backend',
-        categoryName: 'Backend Development',
-        tags: ['Express', 'Fastify', 'NestJS', 'Microservices', 'Event-driven'],
-        achievements: [
-          'Built scalable REST APIs',
-          'Implemented microservices architecture',
-          'Real-time applications with WebSockets',
-          'Performance optimization expertise'
-        ],
-        icon: 'i-simple-icons-nodedotjs'
-      },
-      {
-        id: 'python',
-        name: 'Python',
-        description: 'High-level programming language for web development',
-        level: 'advanced',
-        percentage: 82,
-        experience: '2+ years',
-        projects: 10,
-        color: '#3776AB',
-        categoryId: 'backend',
-        categoryName: 'Backend Development',
-        tags: ['Django', 'FastAPI', 'Flask', 'SQLAlchemy', 'Pandas'],
-        achievements: [
-          'Data processing pipelines',
-          'Machine learning integrations',
-          'API development with FastAPI',
-          'Automation scripts and tools'
-        ],
-        icon: 'i-simple-icons-python'
-      }
-    ]
-  },
-  {
-    id: 'tools',
-    name: 'Tools & DevOps',
-    icon: 'i-heroicons-wrench-screwdriver',
-    skills: [
-      {
-        id: 'docker',
-        name: 'Docker',
-        description: 'Containerization platform for application deployment',
-        level: 'advanced',
-        percentage: 85,
-        experience: '2+ years',
-        projects: 15,
-        color: '#2496ED',
-        categoryId: 'tools',
-        categoryName: 'Tools & DevOps',
-        tags: ['Containers', 'Docker Compose', 'Multi-stage', 'Dockerfile', 'Registry'],
-        achievements: [
-          'Containerized 15+ applications',
-          'Multi-stage build optimizations',
-          'Docker Compose orchestration',
-          'CI/CD pipeline integrations'
-        ],
-        icon: 'i-simple-icons-docker'
-      },
-      {
-        id: 'git',
-        name: 'Git',
-        description: 'Version control system for tracking code changes',
-        level: 'expert',
-        percentage: 95,
-        experience: '4+ years',
-        projects: 50,
-        color: '#F05032',
-        categoryId: 'tools',
-        categoryName: 'Tools & DevOps',
-        tags: ['GitHub', 'GitLab', 'Branching', 'Merging', 'Workflows'],
-        achievements: [
-          'Managed 50+ repositories',
-          'Git workflow optimization',
-          'Code review processes',
-          'Branch strategy implementations'
-        ],
-        icon: 'i-simple-icons-git'
-      }
-    ]
-  }
-])
+// Use centralized personal data
+const { skills } = usePersonalData()
+const { skill: skillFormatters } = personalDataFormatters
+
+// Transform personal data to component format
+const skillCategories = computed(() => {
+  return skills.value.map(category => ({
+    id: category.name.toLowerCase().replace(/\s+/g, '-'),
+    name: category.name,
+    icon: category.icon || 'i-heroicons-code-bracket',
+    skills: category.skills.map((skill, index) => ({
+      id: skill.name.toLowerCase().replace(/\s+/g, '-'),
+      name: skill.name,
+      description: skill.description || `${skill.level} level skill in ${skill.name}`,
+      level: skill.level,
+      percentage: skillFormatters.getSkillLevelProgress(skill.level as SkillLevel),
+      experience: skill.years ? `${skill.years}+ years` : 'N/A',
+      projects: Math.floor(Math.random() * 20) + 5, // Could be enhanced with real project count
+      color: ['#4FC08D', '#00DC82', '#61DAFB', '#3178C6', '#339933', '#3776AB', '#2496ED', '#F05032'][index % 8],
+      categoryId: category.name.toLowerCase().replace(/\s+/g, '-'),
+      categoryName: category.name,
+      tags: [], // Could be enhanced with skill-specific tags
+      achievements: [], // Could be enhanced with achievements
+      icon: skill.icon || 'i-heroicons-code-bracket',
+      animationDelay: index * 100
+    }))
+  }))
+})
 
 // Computed
 const allSkills = computed(() => {

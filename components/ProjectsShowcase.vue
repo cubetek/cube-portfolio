@@ -1,503 +1,285 @@
 <template>
-  <div class="projects-showcase">
-    <div class="projects-header">
-      <h2 class="projects-title">
-        {{ $t('projects.title') || 'Featured Projects' }}
+  <div class="projects-showcase py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="projects-header text-center mb-12">
+      <h2
+        class="projects-title text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4"
+      >
+        {{ $t("projects.title") || "Featured Projects" }}
       </h2>
-      <p class="projects-description">
-        {{ $t('projects.description') || 'Explore my latest work and technical achievements' }}
+      <p
+        class="projects-description text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
+      >
+        {{
+          $t("projects.description") ||
+          "Explore my latest work and technical achievements"
+        }}
       </p>
     </div>
 
     <!-- Project Filters -->
-    <div class="projects-filters">
-      <div class="filter-buttons">
-        <button
+    <div class="projects-filters mb-12">
+      <div class="filter-buttons flex flex-wrap justify-center gap-3">
+        <UButton
           v-for="filter in filters"
           :key="filter.id"
-          :class="[
-            'filter-btn',
-            { 'filter-btn--active': activeFilter === filter.id }
-          ]"
+          :variant="activeFilter === filter.id ? 'solid' : 'outline'"
+          :color="activeFilter === filter.id ? 'primary' : 'gray'"
+          size="md"
           @click="setActiveFilter(filter.id)"
         >
-          <UIcon :name="filter.icon" class="filter-icon" />
+          <template #leading>
+            <UIcon :name="filter.icon" class="w-4 h-4" />
+          </template>
           {{ $t(`projects.filters.${filter.id}`) || filter.label }}
-        </button>
+        </UButton>
       </div>
     </div>
 
     <!-- Projects Grid -->
-    <div class="projects-grid">
-      <TransitionGroup name="project-card" tag="div" class="grid-container">
-        <div
+    <div class="projects-grid mb-12">
+      <TransitionGroup
+        name="project-card"
+        tag="div"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <UCard
           v-for="project in filteredProjects"
           :key="project.id"
-          class="project-card"
+          class="project-card hover:scale-[1.02] transition-transform duration-300"
+          :ui="{}"
         >
-          <div class="project-image">
-            <NuxtImg
-              :src="project.image"
-              :alt="project.title"
-              class="project-img"
-              loading="lazy"
-              format="webp"
-            />
-            <div class="project-overlay">
-              <div class="project-actions">
-                <UButton
-                  :to="project.demoUrl"
-                  target="_blank"
-                  size="sm"
-                  variant="solid"
-                  color="primary"
-                  class="action-btn"
-                >
-                  <UIcon name="i-heroicons-eye" />
-                  {{ $t('projects.demo') || 'Live Demo' }}
-                </UButton>
-                <UButton
-                  :to="project.githubUrl"
-                  target="_blank"
-                  size="sm"
-                  variant="outline"
-                  color="primary"
-                  class="action-btn"
-                >
-                  <UIcon name="i-heroicons-code-bracket" />
-                  {{ $t('projects.code') || 'Code' }}
-                </UButton>
+          <template #header>
+            <div class="project-image relative overflow-hidden">
+              <img
+                :src="project.image"
+                :alt="project.title"
+                class="project-img w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+                loading="lazy"
+              />
+              <div
+                class="project-overlay absolute inset-0 bg-black/70 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+              >
+                <div class="project-actions flex gap-2">
+                  <UButton
+                    :to="project.demoUrl"
+                    target="_blank"
+                    size="sm"
+                    variant="solid"
+                    color="primary"
+                  >
+                    <template #leading>
+                      <UIcon name="i-heroicons-eye" class="w-4 h-4" />
+                    </template>
+                    {{ $t("projects.demo") || "Live Demo" }}
+                  </UButton>
+                  <UButton
+                    :to="project.githubUrl"
+                    target="_blank"
+                    size="sm"
+                    variant="outline"
+                    color="gray"
+                  >
+                    <template #leading>
+                      <UIcon name="i-heroicons-code-bracket" class="w-4 h-4" />
+                    </template>
+                    {{ $t("projects.code") || "Code" }}
+                  </UButton>
+                </div>
               </div>
             </div>
-          </div>
+          </template>
 
-          <div class="project-content">
-            <h3 class="project-title">{{ project.title }}</h3>
-            <p class="project-description">{{ project.description }}</p>
-            
-            <div class="project-tech">
-              <span
+          <div class="project-content p-6">
+            <h3
+              class="project-title text-xl font-semibold text-gray-900 dark:text-white mb-2"
+            >
+              {{ project.title }}
+            </h3>
+            <p
+              class="project-description text-gray-600 dark:text-gray-400 mb-4 line-clamp-2"
+            >
+              {{ project.description }}
+            </p>
+
+            <div class="project-tech flex flex-wrap gap-2 mb-4">
+              <UBadge
                 v-for="tech in project.technologies"
                 :key="tech"
-                class="tech-badge"
+                variant="soft"
+                color="primary"
+                size="sm"
               >
                 {{ tech }}
-              </span>
+              </UBadge>
             </div>
 
-            <div class="project-meta">
-              <span class="project-date">
+            <div class="project-meta flex justify-between items-center text-sm">
+              <span class="project-date text-gray-500 dark:text-gray-400">
                 {{ formatDate(project.date) }}
               </span>
-              <span class="project-status" :class="`status-${project.status}`">
+              <UBadge
+                :color="
+                  project.status === 'completed'
+                    ? 'green'
+                    : project.status === 'in-progress'
+                      ? 'yellow'
+                      : 'gray'
+                "
+                variant="subtle"
+                size="sm"
+              >
                 {{ $t(`projects.status.${project.status}`) || project.status }}
-              </span>
+              </UBadge>
             </div>
           </div>
-        </div>
+        </UCard>
       </TransitionGroup>
     </div>
 
     <!-- Load More Button -->
-    <div v-if="hasMore" class="projects-load-more">
+    <div v-if="hasMore" class="projects-load-more text-center">
       <UButton
         @click="loadMore"
         size="lg"
         variant="outline"
         color="primary"
         :loading="loading"
-        class="load-more-btn"
+        class="min-w-[200px]"
       >
-        {{ $t('projects.loadMore') || 'Load More Projects' }}
+        {{ $t("projects.loadMore") || "Load More Projects" }}
       </UButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from "vue";
 
 // Types
 interface Project {
-  id: string
-  title: string
-  description: string
-  image: string
-  demoUrl: string
-  githubUrl: string
-  technologies: string[]
-  category: string
-  date: string
-  status: 'completed' | 'in-progress' | 'archived'
-  featured: boolean
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  demoUrl: string;
+  githubUrl: string;
+  technologies: string[];
+  category: string;
+  date: string;
+  status: "completed" | "in-progress" | "archived";
+  featured: boolean;
 }
 
 interface Filter {
-  id: string
-  label: string
-  icon: string
+  id: string;
+  label: string;
+  icon: string;
 }
 
 // Composables
-const { locale } = useI18n()
+const { locale } = useI18n();
 
 // State
-const activeFilter = ref('all')
-const loading = ref(false)
-const displayCount = ref(6)
+const activeFilter = ref("all");
+const loading = ref(false);
+const displayCount = ref(6);
 
 // Filters configuration
 const filters: Filter[] = [
-  { id: 'all', label: 'All Projects', icon: 'i-heroicons-squares-2x2' },
-  { id: 'web', label: 'Web Development', icon: 'i-heroicons-globe-alt' },
-  { id: 'mobile', label: 'Mobile Apps', icon: 'i-heroicons-device-phone-mobile' },
-  { id: 'api', label: 'API & Backend', icon: 'i-heroicons-server' },
-  { id: 'ui', label: 'UI/UX Design', icon: 'i-heroicons-paint-brush' },
-  { id: 'tools', label: 'Tools & Utilities', icon: 'i-heroicons-wrench-screwdriver' }
-]
+  { id: "all", label: "All Projects", icon: "i-heroicons-squares-2x2" },
+  { id: "web", label: "Web Development", icon: "i-heroicons-globe-alt" },
+  {
+    id: "mobile",
+    label: "Mobile Apps",
+    icon: "i-heroicons-device-phone-mobile",
+  },
+  { id: "api", label: "API & Backend", icon: "i-heroicons-server" },
+  { id: "ui", label: "UI/UX Design", icon: "i-heroicons-paint-brush" },
+  {
+    id: "tools",
+    label: "Tools & Utilities",
+    icon: "i-heroicons-wrench-screwdriver",
+  },
+];
 
-// Mock projects data (would come from content/API)
-const allProjects = ref<Project[]>([
-  {
-    id: '1',
-    title: 'E-commerce Platform',
-    description: 'Full-stack e-commerce solution with Vue 3, Nuxt 3, and Stripe integration',
-    image: '/images/projects/ecommerce.jpg',
-    demoUrl: 'https://demo.example.com',
-    githubUrl: 'https://github.com/user/project',
-    technologies: ['Vue 3', 'Nuxt 3', 'TypeScript', 'Stripe', 'PostgreSQL'],
-    category: 'web',
-    date: '2024-01-15',
-    status: 'completed',
-    featured: true
-  },
-  {
-    id: '2',
-    title: 'Task Management App',
-    description: 'Collaborative task management application with real-time updates',
-    image: '/images/projects/task-app.jpg',
-    demoUrl: 'https://tasks.example.com',
-    githubUrl: 'https://github.com/user/task-app',
-    technologies: ['React', 'Node.js', 'Socket.io', 'MongoDB'],
-    category: 'web',
-    date: '2023-12-10',
-    status: 'completed',
-    featured: true
-  },
-  {
-    id: '3',
-    title: 'Weather Mobile App',
-    description: 'Cross-platform weather application with location-based forecasts',
-    image: '/images/projects/weather-app.jpg',
-    demoUrl: 'https://weather.example.com',
-    githubUrl: 'https://github.com/user/weather-app',
-    technologies: ['React Native', 'Expo', 'Weather API', 'Redux'],
-    category: 'mobile',
-    date: '2023-11-20',
-    status: 'completed',
-    featured: false
-  },
-  {
-    id: '4',
-    title: 'GraphQL API Gateway',
-    description: 'Scalable GraphQL API gateway with microservices architecture',
-    image: '/images/projects/graphql-api.jpg',
-    demoUrl: 'https://api.example.com',
-    githubUrl: 'https://github.com/user/graphql-gateway',
-    technologies: ['GraphQL', 'Node.js', 'Docker', 'Kubernetes', 'Redis'],
-    category: 'api',
-    date: '2023-10-05',
-    status: 'in-progress',
-    featured: true
-  },
-  {
-    id: '5',
-    title: 'Design System',
-    description: 'Comprehensive design system with reusable components',
-    image: '/images/projects/design-system.jpg',
-    demoUrl: 'https://design.example.com',
-    githubUrl: 'https://github.com/user/design-system',
-    technologies: ['Storybook', 'Figma', 'Tailwind CSS', 'Vue 3'],
-    category: 'ui',
-    date: '2023-09-15',
-    status: 'completed',
-    featured: true
-  },
-  {
-    id: '6',
-    title: 'Development Tools CLI',
-    description: 'Command-line interface for streamlining development workflows',
-    image: '/images/projects/cli-tools.jpg',
-    demoUrl: 'https://cli.example.com',
-    githubUrl: 'https://github.com/user/dev-cli',
-    technologies: ['Node.js', 'Commander.js', 'TypeScript', 'Jest'],
-    category: 'tools',
-    date: '2023-08-30',
-    status: 'completed',
-    featured: false
-  }
-])
+// Use centralized personal data
+const { projects } = usePersonalData();
+const { project: projectFormatters, date: dateFormatters } =
+  personalDataFormatters;
+
+// Transform personal data to component format
+const allProjects = computed(() => {
+  return projects.value.map((project) => ({
+    id: project.name.toLowerCase().replace(/\s+/g, "-"),
+    title: project.name,
+    description: project.description,
+    image: project.image || "/images/projects/default.jpg",
+    demoUrl: project.url || "#",
+    githubUrl: project.github || "#",
+    technologies: project.technologies,
+    category: project.category || "web",
+    date: project.startDate,
+    status: project.status,
+    featured: project.featured,
+  }));
+});
 
 // Computed properties
 const filteredProjects = computed(() => {
-  let filtered = allProjects.value
-  
-  if (activeFilter.value !== 'all') {
-    filtered = filtered.filter(project => project.category === activeFilter.value)
+  let filtered = allProjects.value;
+
+  if (activeFilter.value !== "all") {
+    filtered = filtered.filter(
+      (project) => project.category === activeFilter.value
+    );
   }
-  
-  return filtered.slice(0, displayCount.value)
-})
+
+  return filtered.slice(0, displayCount.value);
+});
 
 const hasMore = computed(() => {
-  const totalFiltered = activeFilter.value === 'all' 
-    ? allProjects.value.length 
-    : allProjects.value.filter(p => p.category === activeFilter.value).length
-  
-  return displayCount.value < totalFiltered
-})
+  const totalFiltered =
+    activeFilter.value === "all"
+      ? allProjects.value.length
+      : allProjects.value.filter((p) => p.category === activeFilter.value)
+          .length;
+
+  return displayCount.value < totalFiltered;
+});
 
 // Methods
 const setActiveFilter = (filterId: string) => {
-  activeFilter.value = filterId
-  displayCount.value = 6 // Reset display count when filter changes
-}
+  activeFilter.value = filterId;
+  displayCount.value = 6; // Reset display count when filter changes
+};
 
 const loadMore = async () => {
-  loading.value = true
-  
+  loading.value = true;
+
   // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 500))
-  
-  displayCount.value += 6
-  loading.value = false
-}
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  displayCount.value += 6;
+  loading.value = false;
+};
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
 
 // Lifecycle
 onMounted(() => {
   // Could fetch projects from API here
-  console.log('Projects showcase mounted')
-})
+  console.log("Projects showcase mounted");
+});
 </script>
 
 <style scoped>
-.projects-showcase {
-  padding: 4rem 0;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.projects-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.projects-title {
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700;
-  color: var(--color-gray-900);
-  margin-bottom: 1rem;
-}
-
-.projects-description {
-  font-size: 1.125rem;
-  color: var(--color-gray-600);
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.projects-filters {
-  margin-bottom: 3rem;
-}
-
-.filter-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: 2px solid var(--color-gray-200);
-  border-radius: 2rem;
-  background: var(--color-white);
-  color: var(--color-gray-700);
-  font-weight: 500;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.filter-btn:hover {
-  border-color: var(--color-primary-300);
-  background: var(--color-primary-50);
-  color: var(--color-primary-700);
-}
-
-.filter-btn--active {
-  border-color: var(--color-primary-600);
-  background: var(--color-primary-600);
-  color: var(--color-white);
-}
-
-.filter-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.projects-grid {
-  margin-bottom: 3rem;
-}
-
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
-}
-
-.project-card {
-  background: var(--color-white);
-  border-radius: 1rem;
-  overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.project-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.project-image {
-  position: relative;
-  height: 200px;
-  overflow: hidden;
-}
-
-.project-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.project-card:hover .project-img {
-  transform: scale(1.05);
-}
-
-.project-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.project-card:hover .project-overlay {
-  opacity: 1;
-}
-
-.project-actions {
-  display: flex;
-  gap: 1rem;
-}
-
-.action-btn {
-  font-size: 0.875rem;
-}
-
-.project-content {
-  padding: 1.5rem;
-}
-
-.project-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-gray-900);
-  margin-bottom: 0.5rem;
-}
-
-.project-description {
-  color: var(--color-gray-600);
-  margin-bottom: 1rem;
-  line-height: 1.5;
-}
-
-.project-tech {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.tech-badge {
-  background: var(--color-primary-100);
-  color: var(--color-primary-800);
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.project-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.875rem;
-}
-
-.project-date {
-  color: var(--color-gray-500);
-}
-
-.project-status {
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  text-transform: capitalize;
-}
-
-.status-completed {
-  background: var(--color-green-100);
-  color: var(--color-green-800);
-}
-
-.status-in-progress {
-  background: var(--color-yellow-100);
-  color: var(--color-yellow-800);
-}
-
-.status-archived {
-  background: var(--color-gray-100);
-  color: var(--color-gray-800);
-}
-
-.projects-load-more {
-  text-align: center;
-}
-
-.load-more-btn {
-  min-width: 200px;
-}
-
-/* Transition animations */
+/* Transition animations for project cards */
 .project-card-enter-active,
 .project-card-leave-active {
   transition: all 0.3s ease;
@@ -513,76 +295,14 @@ onMounted(() => {
   transition: transform 0.3s ease;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .projects-title {
-    color: var(--color-gray-100);
-  }
-  
-  .projects-description {
-    color: var(--color-gray-400);
-  }
-  
-  .filter-btn {
-    background: var(--color-gray-800);
-    color: var(--color-gray-300);
-    border-color: var(--color-gray-700);
-  }
-  
-  .filter-btn:hover {
-    background: var(--color-gray-700);
-    color: var(--color-gray-100);
-  }
-  
-  .project-card {
-    background: var(--color-gray-800);
-  }
-  
-  .project-title {
-    color: var(--color-gray-100);
-  }
-  
-  .project-description {
-    color: var(--color-gray-400);
-  }
-}
-
-/* RTL support */
-[dir="rtl"] .filter-btn {
-  flex-direction: row-reverse;
-}
-
-[dir="rtl"] .project-actions {
-  flex-direction: row-reverse;
-}
-
-[dir="rtl"] .project-meta {
-  flex-direction: row-reverse;
-}
-
-/* Responsive design */
+/* RTL support for responsive design */
 @media (max-width: 768px) {
-  .projects-showcase {
-    padding: 2rem 1rem;
-  }
-  
-  .grid-container {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  
-  .filter-buttons {
+  [dir="rtl"] .filter-buttons {
     flex-direction: column;
     align-items: center;
   }
-  
-  .filter-btn {
-    width: 100%;
-    max-width: 300px;
-    justify-content: center;
-  }
-  
-  .project-actions {
+
+  [dir="rtl"] .project-actions {
     flex-direction: column;
     gap: 0.5rem;
   }

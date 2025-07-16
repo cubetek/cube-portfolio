@@ -165,7 +165,7 @@ const features = [
     title: 'UApp Integration',
     description: 'Global modals, notifications, and drawers managed centrally with UApp component.',
     icon: 'i-heroicons-squares-plus',
-    action: 'Learn More',
+    action: 'Learn about UApp',
     link: '#'
   },
   {

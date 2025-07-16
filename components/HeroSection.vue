@@ -1,38 +1,42 @@
 <template>
-  <div class="hero-section">
+  <div class="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary-50 to-primary-100 dark:from-gray-900 dark:to-gray-800">
     <!-- Background with subtle animation -->
-    <div class="hero-background">
-      <div class="hero-gradient"></div>
-      <div class="hero-particles"></div>
+    <div class="absolute inset-0">
+      <div class="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-green-500/10 dark:from-primary-500/5 dark:to-green-500/5 animate-pulse"></div>
+      <div class="absolute inset-0 bg-gradient-to-br from-primary-100/20 via-transparent to-green-100/20 dark:from-primary-900/20 dark:to-green-900/20"></div>
     </div>
     
     <!-- Main hero content -->
-    <div class="hero-content">
-      <div class="hero-text">
+    <div class="relative z-10 max-w-4xl mx-auto px-4 text-center">
+      <div class="space-y-8">
         <!-- Animated title -->
         <Transition name="hero-title" appear>
-          <h1 v-if="isLoaded" class="hero-title">
-            <span class="hero-greeting">{{ $t('welcome') }}</span>
-            <span class="hero-name">{{ $t('hello_world') }}</span>
+          <h1 v-if="isLoaded" class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
+            <span class="block text-lg sm:text-xl md:text-2xl font-medium text-primary-600 dark:text-primary-400 mb-2 opacity-90">
+              {{ $t('welcome') }}
+            </span>
+            <span class="block bg-gradient-to-r from-primary-600 to-green-600 dark:from-primary-400 dark:to-green-400 bg-clip-text text-transparent animate-pulse">
+              {{ $t('hello_world') }}
+            </span>
           </h1>
         </Transition>
         
         <!-- Animated subtitle -->
         <Transition name="hero-subtitle" appear>
-          <p v-if="isLoaded" class="hero-subtitle">
+          <p v-if="isLoaded" class="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
             {{ $t('description') }}
           </p>
         </Transition>
         
         <!-- Animated CTA buttons -->
         <Transition name="hero-cta" appear>
-          <div v-if="isLoaded" class="hero-actions">
+          <div v-if="isLoaded" class="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <UButton
               :to="localePath('/about')"
               size="lg"
               variant="solid"
               color="primary"
-              class="hero-btn hero-btn-primary"
+              class="transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-primary-500/25"
               :aria-label="$t('nav.aboutFullDesc')"
             >
               <template #leading>
@@ -46,7 +50,7 @@
               size="lg"
               variant="outline"
               color="primary"
-              class="hero-btn hero-btn-outline"
+              class="transition-all duration-300 hover:scale-105 hover:shadow-lg border-2 hover:bg-primary-50 dark:hover:bg-primary-900/20"
               :aria-label="$t('nav.contactFullDesc')"
             >
               <template #leading>
@@ -60,11 +64,13 @@
       
       <!-- Scroll indicator -->
       <Transition name="hero-scroll" appear>
-        <div v-if="isLoaded" class="hero-scroll-indicator">
-          <div class="scroll-icon" @click="scrollToNext">
-            <UIcon name="i-heroicons-chevron-down" class="w-6 h-6" />
+        <div v-if="isLoaded" class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center cursor-pointer opacity-70 hover:opacity-100 transition-opacity duration-300" @click="scrollToNext">
+          <div class="w-8 h-8 border-2 border-primary-600 dark:border-primary-400 rounded-full flex items-center justify-center animate-bounce">
+            <UIcon name="i-heroicons-chevron-down" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
           </div>
-          <span class="scroll-text">{{ $t('scroll_down') || 'Scroll Down' }}</span>
+          <span class="text-sm font-medium text-gray-600 dark:text-gray-400 mt-2">
+            {{ $t('scroll_down') || 'Scroll Down' }}
+          </span>
         </div>
       </Transition>
     </div>
@@ -99,201 +105,6 @@ const scrollToNext = () => {
 </script>
 
 <style scoped>
-.hero-section {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background: linear-gradient(135deg, 
-    var(--color-primary-50) 0%, 
-    var(--color-primary-100) 100%
-  );
-}
-
-.hero-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-}
-
-.hero-gradient {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.1) 0%,
-    rgba(139, 92, 246, 0.1) 50%,
-    rgba(236, 72, 153, 0.1) 100%
-  );
-  animation: gradient-shift 8s ease-in-out infinite;
-}
-
-.hero-particles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
-  animation: particles-float 12s ease-in-out infinite;
-}
-
-.hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.hero-text {
-  margin-bottom: 4rem;
-}
-
-.hero-title {
-  margin-bottom: 1.5rem;
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--color-gray-900);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.hero-greeting {
-  font-size: 0.7em;
-  font-weight: 500;
-  color: var(--color-primary-600);
-  opacity: 0.9;
-}
-
-.hero-name {
-  background: linear-gradient(135deg, 
-    var(--color-primary-600) 0%, 
-    var(--color-secondary-600) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: text-shimmer 3s ease-in-out infinite;
-}
-
-.hero-subtitle {
-  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
-  color: var(--color-gray-600);
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.hero-btn {
-  transform: translateY(0);
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.2);
-}
-
-.hero-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px 0 rgba(59, 130, 246, 0.3);
-}
-
-.hero-btn-primary {
-  background: linear-gradient(135deg, 
-    var(--color-primary-600) 0%, 
-    var(--color-primary-700) 100%
-  );
-}
-
-.hero-btn-outline {
-  border: 2px solid var(--color-primary-600);
-  color: var(--color-primary-600);
-}
-
-.hero-btn-outline:hover {
-  background: var(--color-primary-600);
-  color: white;
-}
-
-.hero-scroll-indicator {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.3s ease;
-}
-
-.hero-scroll-indicator:hover {
-  opacity: 1;
-}
-
-.scroll-icon {
-  width: 2rem;
-  height: 2rem;
-  border: 2px solid var(--color-primary-600);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: bounce 2s infinite;
-}
-
-.scroll-text {
-  font-size: 0.875rem;
-  color: var(--color-gray-600);
-  font-weight: 500;
-}
-
-/* Animations */
-@keyframes gradient-shift {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
-}
-
-@keyframes particles-float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  33% { transform: translateY(-10px) rotate(1deg); }
-  66% { transform: translateY(10px) rotate(-1deg); }
-}
-
-@keyframes text-shimmer {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-10px); }
-  60% { transform: translateY(-5px); }
-}
-
 /* Transition animations */
 .hero-title-enter-active {
   animation: slide-up 0.8s ease-out;
@@ -331,67 +142,17 @@ const scrollToNext = () => {
   }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .hero-section {
-    background: linear-gradient(135deg, 
-      var(--color-gray-900) 0%, 
-      var(--color-gray-800) 100%
-    );
-  }
-  
-  .hero-title {
-    color: var(--color-gray-100);
-  }
-  
-  .hero-subtitle {
-    color: var(--color-gray-400);
-  }
-  
-  .scroll-text {
-    color: var(--color-gray-400);
-  }
-}
-
-/* RTL support */
-[dir="rtl"] .hero-title {
-  text-align: right;
-}
-
-[dir="rtl"] .hero-subtitle {
-  text-align: right;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .hero-content {
-    padding: 1rem;
-  }
-  
-  .hero-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .hero-btn {
-    width: 100%;
-    max-width: 300px;
-  }
-}
-
 /* Accessibility - respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .hero-gradient,
-  .hero-particles,
-  .text-shimmer,
-  .scroll-icon {
-    animation: none;
-  }
-  
   .hero-title-enter-active,
   .hero-subtitle-enter-active,
   .hero-cta-enter-active,
   .hero-scroll-enter-active {
+    animation: none;
+  }
+  
+  .animate-pulse,
+  .animate-bounce {
     animation: none;
   }
 }

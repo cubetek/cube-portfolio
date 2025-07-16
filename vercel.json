@@ -1,0 +1,227 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "name": "personal-portfolio",
+  "description": "Multilingual personal portfolio built with Nuxt 3",
+  
+  "build": {
+    "env": {
+      "NODE_VERSION": "18.x"
+    }
+  },
+  
+  "buildCommand": "pnpm build",
+  "outputDirectory": ".output/public",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install --frozen-lockfile",
+  
+  "functions": {
+    "app/server/index.mjs": {
+      "runtime": "nodejs18.x",
+      "maxDuration": 30
+    }
+  },
+  
+  "routes": [
+    {
+      "src": "^/sitemap\\.xml$",
+      "dest": "/api/sitemap-urls"
+    },
+    {
+      "src": "^/robots\\.txt$",
+      "dest": "/_robots.txt"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "^/en/?$",
+      "dest": "/en",
+      "headers": {
+        "cache-control": "s-maxage=300, stale-while-revalidate=3600"
+      }
+    },
+    {
+      "src": "^/en/(.*)$",
+      "dest": "/en/$1",
+      "headers": {
+        "cache-control": "s-maxage=300, stale-while-revalidate=3600"
+      }
+    },
+    {
+      "src": "^/(?!en/)(.*)$",
+      "dest": "/$1",
+      "headers": {
+        "cache-control": "s-maxage=300, stale-while-revalidate=3600"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/app/server/index.mjs"
+    }
+  ],
+  
+  "redirects": [
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/en/index.html",
+      "destination": "/en",
+      "permanent": true
+    },
+    {
+      "source": "/ar/(.*)",
+      "destination": "/$1",
+      "permanent": true
+    },
+    {
+      "source": "/blog/feed.xml",
+      "destination": "/feed.xml",
+      "permanent": false
+    },
+    {
+      "source": "/en/blog/feed.xml",
+      "destination": "/en/feed.xml",
+      "permanent": false
+    }
+  ],
+  
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/_nuxt/(.*)",
+      "destination": "/_nuxt/$1"
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/favicon.ico"
+    }
+  ],
+  
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https:; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    },
+    {
+      "source": "/_nuxt/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/images/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.(css|js|woff2?|ttf|eot)$)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.(png|jpg|jpeg|gif|webp|avif|svg|ico)$)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600"
+        }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    }
+  ],
+  
+  "env": {
+    "NODE_ENV": "production",
+    "NITRO_PRESET": "vercel",
+    "NUXT_PUBLIC_SITE_URL": "@nuxt_public_site_url"
+  },
+  
+  "regions": ["iad1", "fra1"],
+  
+  "crons": []
+}

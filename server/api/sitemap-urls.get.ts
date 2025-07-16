@@ -1,113 +1,12 @@
 /**
  * Dynamic sitemap URL generation
- * Handles content-based URLs for sitemap generation
+ * Handles content-based URLs for sitemap generation using Nuxt Content v3
  */
-
-import { readdir, readFile } from 'fs/promises'
-import { join } from 'path'
 
 export default defineEventHandler(async (event) => {
   const urls: any[] = []
 
   try {
-    // Read content files directly from the filesystem
-    const contentDir = join(process.cwd(), 'content')
-    
-    // Function to recursively read content files
-    async function readContentFiles(dir: string, prefix = ''): Promise<any[]> {
-      const files: any[] = []
-      
-      try {
-        const entries = await readdir(dir, { withFileTypes: true })
-        
-        for (const entry of entries) {
-          const fullPath = join(dir, entry.name)
-          const relativePath = join(prefix, entry.name)
-          
-          if (entry.isDirectory()) {
-            // Recursively read subdirectories
-            const subFiles = await readContentFiles(fullPath, relativePath)
-            files.push(...subFiles)
-          } else if (entry.name.endsWith('.md')) {
-            // Read markdown file
-            try {
-              const content = await readFile(fullPath, 'utf-8')
-              const pathWithoutExt = relativePath.replace('.md', '')
-              
-              // Parse frontmatter if exists (basic implementation)
-              let priority = 0.6
-              let updatedAt = null
-              
-              const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/)
-              if (frontmatterMatch && frontmatterMatch[1]) {
-                const frontmatter = frontmatterMatch[1]
-                const priorityMatch = frontmatter.match(/priority:\s*([0-9.]+)/)
-                const updatedMatch = frontmatter.match(/updatedAt:\s*(.+)/)
-                
-                if (priorityMatch && priorityMatch[1]) priority = parseFloat(priorityMatch[1])
-                if (updatedMatch && updatedMatch[1]) updatedAt = updatedMatch[1].trim()
-              }
-              
-              files.push({
-                _path: '/' + pathWithoutExt.replace(/\\/g, '/'),
-                priority,
-                updatedAt,
-                createdAt: updatedAt
-              })
-            } catch (fileError) {
-              console.warn(`Could not read file: ${fullPath}`, fileError)
-            }
-          }
-        }
-      } catch (dirError) {
-        console.warn(`Could not read directory: ${dir}`, dirError)
-      }
-      
-      return files
-    }
-    
-    // Read all content files
-    const contentFiles = await readContentFiles(contentDir)
-    
-    // Process each content file
-    for (const content of contentFiles) {
-      if (content._path) {
-        // Determine language from path
-        const isArabic = content._path.startsWith('/ar/')
-        const isEnglish = content._path.startsWith('/en/')
-        
-        if (isArabic || isEnglish) {
-          // Clean the path
-          let path = content._path
-          if (isArabic) {
-            path = path.replace('/ar', '')
-          } else if (isEnglish) {
-            path = path.replace('/en', '/en')
-          }
-
-          // Skip index files as they're handled by pages
-          if (path.endsWith('/index') || path === '/index') {
-            continue
-          }
-
-          urls.push({
-            url: path,
-            changefreq: 'monthly',
-            priority: content.priority || 0.6,
-            lastmod: content.updatedAt || content.createdAt || new Date().toISOString(),
-            // Add language alternates
-            alternateUrls: isArabic ? [
-              { href: path, hreflang: 'ar-SA' },
-              { href: `/en${path}`, hreflang: 'en-US' }
-            ] : [
-              { href: path.replace('/en', ''), hreflang: 'ar-SA' },
-              { href: path, hreflang: 'en-US' }
-            ]
-          })
-        }
-      }
-    }
-
     // Add static pages with high priority
     const staticPages = [
       { url: '/', priority: 1.0, changefreq: 'weekly' },
@@ -126,6 +25,98 @@ export default defineEventHandler(async (event) => {
       ...page,
       lastmod: new Date().toISOString()
     })))
+
+    // Add blog post URLs from content collections
+    try {
+      // Get all blog posts using Nuxt Content v3 query
+      const blogPosts = await queryCollection('blog').all()
+      
+      // Generate URLs for each blog post
+      for (const post of blogPosts) {
+        if (post.published !== false && post.slug) {
+          // Extract language from path
+          const pathParts = post.path.split('/')
+          const language = pathParts[1] // e.g., 'en' or 'ar'
+          
+          let blogUrl = ''
+          if (language === 'ar') {
+            // Arabic is the default language (no prefix)
+            blogUrl = `/blog/${post.slug}`
+          } else if (language === 'en') {
+            // English has prefix
+            blogUrl = `/en/blog/${post.slug}`
+          }
+          
+          if (blogUrl) {
+            urls.push({
+              url: blogUrl,
+              changefreq: 'monthly',
+              priority: post.priority || 0.8,
+              lastmod: post.updated || post.date || new Date().toISOString(),
+              // Add language alternates
+              alternateUrls: language === 'ar' ? [
+                { href: blogUrl, hreflang: 'ar-SA' },
+                { href: `/en/blog/${post.slug}`, hreflang: 'en-US' }
+              ] : [
+                { href: `/blog/${post.slug}`, hreflang: 'ar-SA' },
+                { href: blogUrl, hreflang: 'en-US' }
+              ]
+            })
+          }
+        }
+      }
+    } catch (blogError) {
+      console.warn('Error fetching blog posts for sitemap:', blogError)
+      // Continue without blog posts if there's an error
+    }
+
+    // Add page content URLs
+    try {
+      // Get all page content using Nuxt Content v3 query
+      const pages = await queryCollection('pages').all()
+      
+      // Generate URLs for each page
+      for (const page of pages) {
+        if (page.published !== false && page.path) {
+          // Extract language from path
+          const pathParts = page.path.split('/')
+          const language = pathParts[1] // e.g., 'en' or 'ar'
+          
+          let pageUrl = ''
+          if (language === 'ar') {
+            // Arabic is the default language (no prefix)
+            pageUrl = page.path.replace('/ar', '')
+          } else if (language === 'en') {
+            // English has prefix
+            pageUrl = page.path.replace('/en', '/en')
+          }
+          
+          // Skip index files and already added static pages
+          if (pageUrl && !pageUrl.endsWith('/index') && pageUrl !== '/index') {
+            const isAlreadyAdded = staticPages.some(sp => sp.url === pageUrl)
+            if (!isAlreadyAdded) {
+              urls.push({
+                url: pageUrl,
+                changefreq: 'monthly',
+                priority: page.priority || 0.6,
+                lastmod: page.updated || page.date || new Date().toISOString(),
+                // Add language alternates
+                alternateUrls: language === 'ar' ? [
+                  { href: pageUrl, hreflang: 'ar-SA' },
+                  { href: `/en${pageUrl}`, hreflang: 'en-US' }
+                ] : [
+                  { href: pageUrl.replace('/en', ''), hreflang: 'ar-SA' },
+                  { href: pageUrl, hreflang: 'en-US' }
+                ]
+              })
+            }
+          }
+        }
+      }
+    } catch (pageError) {
+      console.warn('Error fetching pages for sitemap:', pageError)
+      // Continue without pages if there's an error
+    }
 
   } catch (error) {
     console.error('Error generating sitemap URLs:', error)

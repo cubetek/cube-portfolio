@@ -9,32 +9,14 @@
       />
       
       <!-- Page Header -->
-      <div class="mb-8">
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          {{ contentData?.title || $t('contact') }}
-        </h1>
-        <p v-if="contentData?.description" class="text-lg text-gray-600 dark:text-gray-300">
-          {{ contentData.description }}
-        </p>
-      </div>
+
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Content Column -->
-        <div class="lg:col-span-2">
-          <UCard class="prose prose-lg dark:prose-invert max-w-none">
-            <template #default>
-              <ContentRenderer 
-                v-if="contentData" 
-                :value="contentData"
-                class="contact-content"
-              />
-              <div v-else class="text-center py-8">
-                <p class="text-gray-600 dark:text-gray-400">
-                  {{ $t('loading') || 'Loading content...' }}
-                </p>
-              </div>
-            </template>
-          </UCard>
+        <div class="lg:col-span-2 space-y-8">
+
+          <!-- Contact Form -->
+          <ContactForm />
         </div>
 
         <!-- Contact Methods Sidebar -->

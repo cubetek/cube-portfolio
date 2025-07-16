@@ -1,0 +1,511 @@
+name: Performance Monitoring
+
+on:
+  schedule:
+    # Run every 4 hours
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      duration:
+        description: 'Monitoring duration in minutes'
+        required: false
+        default: '60'
+        type: string
+      urls:
+        description: 'Comma-separated URLs to monitor'
+        required: false
+        default: ''
+        type: string
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  performance-monitoring:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install monitoring dependencies
+      run: |
+        npm install -g lighthouse @lhci/cli autocannon clinic
+        npm install axios fs-extra
+
+    - name: Configure monitoring
+      id: config
+      run: |
+        # Set monitoring parameters
+        DURATION="${{ github.event.inputs.duration || '60' }}"
+        BASE_URL="${{ secrets.PRODUCTION_URL || 'https://your-domain.com' }}"
+        
+        # Set URLs to monitor
+        if [ -n "${{ github.event.inputs.urls }}" ]; then
+          URLS="${{ github.event.inputs.urls }}"
+        else
+          URLS="$BASE_URL,$BASE_URL/en,$BASE_URL/about,$BASE_URL/en/about,$BASE_URL/blog,$BASE_URL/en/blog"
+        fi
+        
+        echo "duration=$DURATION" >> $GITHUB_OUTPUT
+        echo "base-url=$BASE_URL" >> $GITHUB_OUTPUT
+        echo "urls=$URLS" >> $GITHUB_OUTPUT
+        
+        echo "Monitoring configuration:"
+        echo "Duration: $DURATION minutes"
+        echo "Base URL: $BASE_URL"
+        echo "URLs: $URLS"
+
+    - name: Create monitoring script
+      run: |
+        cat > performance-monitor.js << 'EOF'
+        const https = require('https');
+        const http = require('http');
+        const fs = require('fs');
+        
+        const config = {
+          duration: parseInt(process.env.DURATION) * 60 * 1000, // Convert to milliseconds
+          interval: 30000, // 30 seconds
+          urls: process.env.URLS.split(','),
+          results: []
+        };
+        
+        let startTime = Date.now();
+        let checks = 0;
+        
+        async function checkUrl(url) {
+          const start = Date.now();
+          
+          return new Promise((resolve) => {
+            const client = url.startsWith('https') ? https : http;
+            
+            const request = client.get(url, { timeout: 10000 }, (response) => {
+              const responseTime = Date.now() - start;
+              
+              let data = '';
+              response.on('data', chunk => data += chunk);
+              response.on('end', () => {
+                resolve({
+                  url,
+                  status: response.statusCode,
+                  responseTime,
+                  size: data.length,
+                  success: response.statusCode >= 200 && response.statusCode < 400,
+                  timestamp: new Date().toISOString()
+                });
+              });
+            });
+            
+            request.on('timeout', () => {
+              request.destroy();
+              resolve({
+                url,
+                status: 0,
+                responseTime: Date.now() - start,
+                size: 0,
+                success: false,
+                error: 'timeout',
+                timestamp: new Date().toISOString()
+              });
+            });
+            
+            request.on('error', (error) => {
+              resolve({
+                url,
+                status: 0,
+                responseTime: Date.now() - start,
+                size: 0,
+                success: false,
+                error: error.message,
+                timestamp: new Date().toISOString()
+              });
+            });
+          });
+        }
+        
+        async function runCheck() {
+          checks++;
+          console.log(`Running check ${checks} at ${new Date().toISOString()}`);
+          
+          const results = [];
+          for (const url of config.urls) {
+            const result = await checkUrl(url);
+            results.push(result);
+            
+            const status = result.success ? '✅' : '❌';
+            console.log(`${status} ${url} - ${result.status} (${result.responseTime}ms)`);
+          }
+          
+          config.results.push({
+            check: checks,
+            timestamp: new Date().toISOString(),
+            results
+          });
+          
+          // Check if monitoring duration is complete
+          if (Date.now() - startTime >= config.duration) {
+            console.log('Monitoring complete. Generating report...');
+            generateReport();
+            process.exit(0);
+          }
+        }
+        
+        function generateReport() {
+          const report = {
+            summary: {
+              totalChecks: checks,
+              duration: config.duration / 60000, // Convert back to minutes
+              urls: config.urls,
+              startTime: new Date(startTime).toISOString(),
+              endTime: new Date().toISOString()
+            },
+            statistics: {},
+            alerts: []
+          };
+          
+          // Calculate statistics for each URL
+          config.urls.forEach(url => {
+            const urlResults = config.results.flatMap(check => 
+              check.results.filter(result => result.url === url)
+            );
+            
+            const successfulResults = urlResults.filter(r => r.success);
+            const uptime = (successfulResults.length / urlResults.length) * 100;
+            const avgResponseTime = successfulResults.length > 0 ?
+              successfulResults.reduce((sum, r) => sum + r.responseTime, 0) / successfulResults.length : 0;
+            
+            report.statistics[url] = {
+              totalRequests: urlResults.length,
+              successfulRequests: successfulResults.length,
+              failedRequests: urlResults.length - successfulResults.length,
+              uptime: uptime,
+              averageResponseTime: avgResponseTime,
+              minResponseTime: Math.min(...successfulResults.map(r => r.responseTime)),
+              maxResponseTime: Math.max(...successfulResults.map(r => r.responseTime))
+            };
+            
+            // Generate alerts
+            if (uptime < 99) {
+              report.alerts.push({
+                type: 'uptime',
+                severity: 'critical',
+                url: url,
+                message: `Low uptime: ${uptime.toFixed(2)}%`,
+                value: uptime
+              });
+            }
+            
+            if (avgResponseTime > 2000) {
+              report.alerts.push({
+                type: 'response_time',
+                severity: 'warning',
+                url: url,
+                message: `High response time: ${Math.round(avgResponseTime)}ms`,
+                value: avgResponseTime
+              });
+            }
+          });
+          
+          // Save report
+          fs.writeFileSync('performance-report.json', JSON.stringify(report, null, 2));
+          fs.writeFileSync('performance-data.json', JSON.stringify(config.results, null, 2));
+          
+          console.log('Performance monitoring report generated');
+          console.log(`Total checks: ${checks}`);
+          console.log(`Duration: ${report.summary.duration} minutes`);
+          console.log(`Alerts: ${report.alerts.length}`);
+        }
+        
+        // Start monitoring
+        console.log(`Starting performance monitoring for ${config.duration / 60000} minutes`);
+        console.log(`Monitoring URLs: ${config.urls.join(', ')}`);
+        
+        runCheck(); // Initial check
+        const interval = setInterval(runCheck, config.interval);
+        
+        // Cleanup on exit
+        process.on('SIGINT', () => {
+          clearInterval(interval);
+          generateReport();
+          process.exit(0);
+        });
+        EOF
+
+    - name: Run performance monitoring
+      run: |
+        export DURATION="${{ steps.config.outputs.duration }}"
+        export URLS="${{ steps.config.outputs.urls }}"
+        
+        node performance-monitor.js
+
+    - name: Analyze results
+      id: analysis
+      run: |
+        # Parse monitoring results
+        TOTAL_ALERTS=$(node -p "require('./performance-report.json').alerts.length")
+        TOTAL_CHECKS=$(node -p "require('./performance-report.json').summary.totalChecks")
+        
+        echo "total-alerts=$TOTAL_ALERTS" >> $GITHUB_OUTPUT
+        echo "total-checks=$TOTAL_CHECKS" >> $GITHUB_OUTPUT
+        
+        # Generate summary
+        node -e "
+        const report = require('./performance-report.json');
+        
+        console.log('## 📊 Performance Monitoring Summary');
+        console.log('');
+        console.log('**Duration:** ' + report.summary.duration + ' minutes');
+        console.log('**Total Checks:** ' + report.summary.totalChecks);
+        console.log('**URLs Monitored:** ' + report.summary.urls.length);
+        console.log('**Alerts Generated:** ' + report.alerts.length);
+        console.log('');
+        
+        console.log('### 📈 URL Statistics');
+        console.log('');
+        Object.entries(report.statistics).forEach(([url, stats]) => {
+          const status = stats.uptime >= 99 ? '✅' : stats.uptime >= 95 ? '⚠️' : '❌';
+          console.log('**' + url + '** ' + status);
+          console.log('- Uptime: ' + stats.uptime.toFixed(2) + '%');
+          console.log('- Avg Response: ' + Math.round(stats.averageResponseTime) + 'ms');
+          console.log('- Failed Requests: ' + stats.failedRequests);
+          console.log('');
+        });
+        
+        if (report.alerts.length > 0) {
+          console.log('### 🚨 Alerts');
+          console.log('');
+          report.alerts.forEach(alert => {
+            const emoji = alert.severity === 'critical' ? '🔴' : '🟡';
+            console.log(emoji + ' **' + alert.type + ':** ' + alert.message);
+          });
+        }
+        " > monitoring-summary.md
+
+    - name: Run Lighthouse performance audit
+      run: |
+        BASE_URL="${{ steps.config.outputs.base-url }}"
+        
+        echo "Running Lighthouse audit on $BASE_URL"
+        
+        # Run Lighthouse audit
+        npx lighthouse "$BASE_URL" \
+          --preset=mobile \
+          --output=json,html \
+          --output-path=./lighthouse-monitoring \
+          --chrome-flags="--headless --no-sandbox --disable-gpu" \
+          --only-categories=performance \
+          --quiet
+        
+        # Extract performance metrics
+        PERF_SCORE=$(node -p "Math.round(require('./lighthouse-monitoring.report.json').categories.performance.score * 100)")
+        LCP=$(node -p "Math.round(require('./lighthouse-monitoring.report.json').audits['largest-contentful-paint'].numericValue)")
+        FID=$(node -p "Math.round(require('./lighthouse-monitoring.report.json').audits['max-potential-fid'].numericValue)")
+        CLS=$(node -p "require('./lighthouse-monitoring.report.json').audits['cumulative-layout-shift'].numericValue.toFixed(3)")
+        
+        echo "Performance Score: $PERF_SCORE/100"
+        echo "LCP: ${LCP}ms"
+        echo "FID: ${FID}ms"
+        echo "CLS: $CLS"
+        
+        # Append to summary
+        cat >> monitoring-summary.md << EOF
+        
+        ### 🎯 Lighthouse Performance Audit
+        
+        - **Performance Score:** ${PERF_SCORE}/100
+        - **Largest Contentful Paint (LCP):** ${LCP}ms
+        - **Max Potential First Input Delay:** ${FID}ms
+        - **Cumulative Layout Shift (CLS):** ${CLS}
+        EOF
+
+    - name: Load testing with autocannon
+      run: |
+        BASE_URL="${{ steps.config.outputs.base-url }}"
+        
+        echo "Running load test on $BASE_URL"
+        
+        # Run 30-second load test with 10 concurrent connections
+        npx autocannon \
+          --connections 10 \
+          --duration 30 \
+          --json \
+          "$BASE_URL" > load-test-results.json
+        
+        # Extract key metrics
+        REQUESTS_PER_SEC=$(node -p "require('./load-test-results.json').requests.average")
+        AVG_LATENCY=$(node -p "require('./load-test-results.json').latency.average")
+        THROUGHPUT=$(node -p "require('./load-test-results.json').throughput.average")
+        
+        echo "Requests/sec: $REQUESTS_PER_SEC"
+        echo "Avg Latency: ${AVG_LATENCY}ms"
+        echo "Throughput: ${THROUGHPUT} bytes/sec"
+        
+        # Append to summary
+        cat >> monitoring-summary.md << EOF
+        
+        ### ⚡ Load Test Results
+        
+        - **Requests per Second:** ${REQUESTS_PER_SEC}
+        - **Average Latency:** ${AVG_LATENCY}ms
+        - **Average Throughput:** ${THROUGHPUT} bytes/sec
+        EOF
+
+    - name: Upload monitoring artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-monitoring-${{ github.run_number }}
+        path: |
+          performance-report.json
+          performance-data.json
+          monitoring-summary.md
+          lighthouse-monitoring.*
+          load-test-results.json
+        retention-days: 7
+
+    - name: Create performance issue on alerts
+      if: steps.analysis.outputs.total-alerts > 0
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync('performance-report.json', 'utf8'));
+          const summary = fs.readFileSync('monitoring-summary.md', 'utf8');
+          
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `🚨 Performance Monitoring Alert - ${new Date().toISOString().split('T')[0]}`,
+            body: `
+            ## Performance Monitoring Alert
+            
+            **Monitoring Run:** ${context.runId}
+            **Date:** ${new Date().toISOString()}
+            **Alerts:** ${report.alerts.length}
+            **Duration:** ${report.summary.duration} minutes
+            
+            ${summary}
+            
+            ### 📋 Detailed Report
+            
+            [View full monitoring artifacts](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            
+            ### 🛠️ Recommended Actions
+            
+            - [ ] Review performance metrics and identify bottlenecks
+            - [ ] Check server resources and scaling
+            - [ ] Analyze slow endpoints and optimize
+            - [ ] Review caching configuration
+            - [ ] Monitor for service degradation
+            
+            This issue will be automatically updated with subsequent monitoring runs.
+            `,
+            labels: ['performance', 'monitoring', 'alert']
+          });
+          
+          console.log(`Created performance alert issue #${issue.data.number}`);
+
+    - name: Notify Slack on critical alerts
+      if: steps.analysis.outputs.total-alerts > 0
+      run: |
+        if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+          ALERT_COUNT="${{ steps.analysis.outputs.total-alerts }}"
+          
+          curl -X POST "${{ secrets.SLACK_WEBHOOK }}" \
+            -H 'Content-type: application/json' \
+            --data "{
+              \"attachments\": [{
+                \"color\": \"danger\",
+                \"title\": \"🚨 Performance Monitoring Alert\",
+                \"text\": \"${ALERT_COUNT} performance alerts detected during monitoring\",
+                \"fields\": [
+                  {
+                    \"title\": \"Alerts\",
+                    \"value\": \"${ALERT_COUNT}\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"Duration\",
+                    \"value\": \"${{ steps.config.outputs.duration }} minutes\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"Report\",
+                    \"value\": \"<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>\",
+                    \"short\": false
+                  }
+                ]
+              }]
+            }"
+        fi
+
+  # Bundle analysis job
+  bundle-analysis:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 'latest'
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build with analysis
+      run: |
+        ANALYZE=true pnpm run build
+
+    - name: Generate bundle analysis report
+      run: |
+        # Create bundle analysis summary
+        cat > bundle-analysis.md << EOF
+        # 📦 Bundle Analysis Report
+        
+        **Generated:** $(date)
+        **Branch:** ${{ github.ref_name }}
+        **Commit:** ${{ github.sha }}
+        
+        ## 📊 Bundle Size Analysis
+        
+        The bundle analysis has been generated. Key files to review:
+        
+        - **Main bundle visualization:** Available in artifacts
+        - **Chunk breakdown:** Check .nuxt/stats.html
+        - **Performance impact:** Review large dependencies
+        
+        ## 🎯 Optimization Recommendations
+        
+        1. **Large Dependencies:** Review vendor chunks for optimization opportunities
+        2. **Code Splitting:** Ensure proper route-based splitting
+        3. **Tree Shaking:** Verify unused code elimination
+        4. **Dynamic Imports:** Use lazy loading for heavy components
+        
+        ## 📈 Bundle Size Thresholds
+        
+        - **JavaScript:** < 250KB (gzipped)
+        - **CSS:** < 50KB (gzipped)
+        - **Images:** Optimized with WebP/AVIF
+        - **Fonts:** Subset and preloaded
+        EOF
+
+    - name: Upload bundle analysis
+      uses: actions/upload-artifact@v4
+      with:
+        name: bundle-analysis-${{ github.run_number }}
+        path: |
+          .nuxt/stats.html
+          bundle-analysis.md
+        retention-days: 7

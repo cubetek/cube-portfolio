@@ -73,6 +73,9 @@ export function useAriaLiveRegions() {
 
     if (!region) {
       region = createLiveRegion(regionId, politeness)
+      if (region) {
+        liveRegions.value.push(region)
+      }
     }
 
     if (region?.element) {
@@ -131,7 +134,7 @@ export function useFocusManagement() {
     
     return elements
       .filter(element => {
-        return !element.disabled && 
+        return !(element as any).disabled && 
                element.offsetWidth > 0 && 
                element.offsetHeight > 0 &&
                window.getComputedStyle(element).visibility !== 'hidden'

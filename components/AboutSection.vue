@@ -1,142 +1,147 @@
 <template>
-  <div class="about-section">
-    <div class="about-container">
+  <div class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col gap-16">
       <!-- About Header -->
-      <div class="about-header">
-        <h2 class="about-title">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
           {{ $t('about.title') || 'About Me' }}
         </h2>
-        <p class="about-subtitle">
+        <p class="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           {{ $t('about.subtitle') || 'Passionate developer crafting digital experiences' }}
         </p>
       </div>
 
       <!-- Main Content -->
-      <div class="about-content">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-16 items-start">
         <!-- Profile Image -->
-        <div class="profile-section">
-          <div class="profile-image-container">
-            <NuxtImg
-              src="/images/profile.jpg"
-              alt="Professional headshot"
-              class="profile-image"
+        <div class="flex flex-col gap-8 lg:col-span-1">
+          <div class="relative w-72 h-72 mx-auto">
+            <img
+              :src="profile.avatar"
+              :alt="profile.name"
+              class="w-full h-full object-cover rounded-full border-4 border-primary-600 shadow-xl"
               loading="lazy"
-              format="webp"
             />
-            <div class="profile-overlay">
-              <div class="status-indicator">
-                <span class="status-dot"></span>
-                <span class="status-text">
-                  {{ $t('about.status') || 'Available for projects' }}
+            <div class="absolute bottom-4 end-4 bg-white dark:bg-gray-800 px-3 py-2 rounded-full shadow-lg border-2 border-primary-600">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ profile.availability || $t('about.status') || 'Available for projects' }}
                 </span>
               </div>
             </div>
           </div>
 
           <!-- Contact Links -->
-          <div class="contact-links">
+          <div class="flex flex-col gap-4">
             <UButton
-              to="mailto:contact@example.com"
+              :to="`mailto:${contact.email}`"
               size="sm"
               variant="outline"
               color="primary"
-              class="contact-btn"
+              icon="i-heroicons-envelope"
+              class="w-full justify-center"
             >
-              <UIcon name="i-heroicons-envelope" />
               {{ $t('about.contact') || 'Get in Touch' }}
             </UButton>
             <UButton
-              to="/cv.pdf"
+              v-if="profile.resume"
+              :to="profile.resume"
               target="_blank"
               size="sm"
               variant="solid"
               color="primary"
-              class="contact-btn"
+              icon="i-heroicons-document-arrow-down"
+              class="w-full justify-center"
             >
-              <UIcon name="i-heroicons-document-arrow-down" />
               {{ $t('about.downloadCV') || 'Download CV' }}
             </UButton>
           </div>
         </div>
 
         <!-- Bio Content -->
-        <div class="bio-section">
-          <div class="bio-content">
-            <div class="bio-text">
-              <p class="bio-paragraph">
-                {{ $t('about.bio.paragraph1') || 'Hello! I\'m a passionate full-stack developer with over 5 years of experience creating innovative digital solutions. I specialize in modern web technologies and have a deep love for clean, efficient code.' }}
+        <div class="lg:col-span-2 flex flex-col gap-12">
+          <div class="flex flex-col gap-8">
+            <div class="space-y-6">
+              <p class="text-lg leading-relaxed text-gray-600 dark:text-gray-400">
+                {{ profile.bio || $t('about.bio.paragraph1') || 'Hello! I\'m a passionate full-stack developer with over 5 years of experience creating innovative digital solutions. I specialize in modern web technologies and have a deep love for clean, efficient code.' }}
               </p>
-              <p class="bio-paragraph">
+              <p class="text-lg leading-relaxed text-gray-600 dark:text-gray-400" v-if="profile.tagline">
+                {{ profile.tagline }}
+              </p>
+              <p class="text-lg leading-relaxed text-gray-600 dark:text-gray-400">
                 {{ $t('about.bio.paragraph2') || 'My journey in development started with a curiosity about how things work under the hood. Today, I work with cutting-edge technologies like Vue.js, React, Node.js, and Python to build scalable applications that solve real-world problems.' }}
               </p>
-              <p class="bio-paragraph">
+              <p class="text-lg leading-relaxed text-gray-600 dark:text-gray-400">
                 {{ $t('about.bio.paragraph3') || 'When I\'m not coding, you can find me exploring new technologies, contributing to open-source projects, or sharing knowledge with the developer community through writing and speaking.' }}
               </p>
             </div>
 
             <!-- Key Stats -->
-            <div class="stats-grid">
-              <div class="stat-item">
-                <div class="stat-number">5+</div>
-                <div class="stat-label">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <UCard class="text-center p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div class="text-3xl font-bold text-primary-600 mb-2">{{ stats.experience }}+</div>
+                <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
                   {{ $t('about.stats.experience') || 'Years Experience' }}
                 </div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-number">50+</div>
-                <div class="stat-label">
+              </UCard>
+              <UCard class="text-center p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div class="text-3xl font-bold text-primary-600 mb-2">{{ stats.projects }}+</div>
+                <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
                   {{ $t('about.stats.projects') || 'Projects Completed' }}
                 </div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-number">10+</div>
-                <div class="stat-label">
+              </UCard>
+              <UCard class="text-center p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div class="text-3xl font-bold text-primary-600 mb-2">{{ stats.technologies }}+</div>
+                <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
                   {{ $t('about.stats.technologies') || 'Technologies' }}
                 </div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-number">100%</div>
-                <div class="stat-label">
+              </UCard>
+              <UCard class="text-center p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div class="text-3xl font-bold text-primary-600 mb-2">{{ stats.satisfaction }}%</div>
+                <div class="text-sm font-medium text-gray-600 dark:text-gray-400">
                   {{ $t('about.stats.satisfaction') || 'Client Satisfaction' }}
                 </div>
-              </div>
+              </UCard>
             </div>
           </div>
 
           <!-- What I Do -->
-          <div class="services-section">
-            <h3 class="services-title">
+          <div class="mt-8">
+            <h3 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-8">
               {{ $t('about.services.title') || 'What I Do' }}
             </h3>
-            <div class="services-grid">
-              <div
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <UCard
                 v-for="service in services"
                 :key="service.id"
-                class="service-card"
+                class="p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border hover:border-primary-300 dark:hover:border-primary-600"
               >
-                <div class="service-icon">
-                  <UIcon :name="service.icon" class="icon" />
+                <div class="flex gap-4">
+                  <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <UIcon :name="service.icon" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      {{ $t(`about.services.${service.id}.title`) || service.title }}
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                      {{ $t(`about.services.${service.id}.description`) || service.description }}
+                    </p>
+                  </div>
                 </div>
-                <div class="service-content">
-                  <h4 class="service-name">
-                    {{ $t(`about.services.${service.id}.title`) || service.title }}
-                  </h4>
-                  <p class="service-description">
-                    {{ $t(`about.services.${service.id}.description`) || service.description }}
-                  </p>
-                </div>
-              </div>
+              </UCard>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Social Links -->
-      <div class="social-section">
-        <h3 class="social-title">
+      <div class="text-center">
+        <h3 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-8">
           {{ $t('about.social.title') || 'Connect With Me' }}
         </h3>
-        <div class="social-links">
+        <div class="flex justify-center flex-wrap gap-4">
           <UButton
             v-for="social in socialLinks"
             :key="social.id"
@@ -144,11 +149,11 @@
             target="_blank"
             size="lg"
             variant="ghost"
-            :color="social.color"
-            class="social-btn"
+            color="neutral"
+            class="flex items-center gap-2 px-6 py-3 hover:-translate-y-1 transition-all duration-300"
           >
-            <UIcon :name="social.icon" class="social-icon" />
-            <span class="social-label">{{ social.label }}</span>
+            <UIcon :name="social.icon" class="w-5 h-5" />
+            <span class="font-medium">{{ social.label }}</span>
           </UButton>
         </div>
       </div>
@@ -159,6 +164,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+// Use centralized personal data
+const { profile, skills, projects, social, contact, getFeaturedProjects } = usePersonalData()
+
 // Types
 interface Service {
   id: string
@@ -167,15 +175,7 @@ interface Service {
   icon: string
 }
 
-interface SocialLink {
-  id: string
-  label: string
-  url: string
-  icon: string
-  color: string
-}
-
-// Services data
+// Services data - this could be moved to personal data later if needed
 const services = ref<Service[]>([
   {
     id: 'frontend',
@@ -215,44 +215,23 @@ const services = ref<Service[]>([
   }
 ])
 
-// Social links data
-const socialLinks = ref<SocialLink[]>([
-  {
-    id: 'github',
-    label: 'GitHub',
-    url: 'https://github.com/username',
-    icon: 'i-simple-icons-github',
-    color: 'gray'
-  },
-  {
-    id: 'linkedin',
-    label: 'LinkedIn',
-    url: 'https://linkedin.com/in/username',
-    icon: 'i-simple-icons-linkedin',
-    color: 'blue'
-  },
-  {
-    id: 'twitter',
-    label: 'Twitter',
-    url: 'https://twitter.com/username',
-    icon: 'i-simple-icons-twitter',
-    color: 'blue'
-  },
-  {
-    id: 'dribbble',
-    label: 'Dribbble',
-    url: 'https://dribbble.com/username',
-    icon: 'i-simple-icons-dribbble',
-    color: 'pink'
-  },
-  {
-    id: 'medium',
-    label: 'Medium',
-    url: 'https://medium.com/@username',
-    icon: 'i-simple-icons-medium',
-    color: 'gray'
-  }
-])
+// Get social links from centralized data
+const socialLinks = computed(() => {
+  return social.value.map(s => ({
+    id: s.platform.toLowerCase(),
+    label: s.displayName || s.platform,
+    url: s.url,
+    icon: s.icon
+  }))
+})
+
+// Calculate stats from centralized data
+const stats = computed(() => ({
+  experience: profile.value.yearsOfExperience,
+  projects: projects.value.length,
+  technologies: skills.value.reduce((total, category) => total + category.skills.length, 0),
+  satisfaction: 100 // This could be made dynamic later
+}))
 </script>
 
 <style scoped>

@@ -1,0 +1,384 @@
+name: Lighthouse CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: '0 6 * * *'
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  lighthouse-ci:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 'latest'
+
+    - name: Get pnpm store directory
+      id: pnpm-cache
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build application
+      run: pnpm run build
+      env:
+        NITRO_PRESET: node-server
+
+    - name: Wait for server to be ready
+      run: |
+        pnpm run preview &
+        sleep 30
+        npx wait-on http://localhost:3000 --timeout 60000
+
+    - name: Run Lighthouse CI
+      run: pnpm run lighthouse:ci
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }}
+
+    - name: Run comprehensive Lighthouse audits
+      run: |
+        # Desktop audit
+        npx lighthouse http://localhost:3000 \
+          --preset=desktop \
+          --output=json,html \
+          --output-path=./lighthouse-desktop \
+          --chrome-flags="--headless --no-sandbox --disable-gpu" \
+          --only-categories=performance,accessibility,best-practices,seo
+        
+        # Mobile audit
+        npx lighthouse http://localhost:3000 \
+          --preset=mobile \
+          --output=json,html \
+          --output-path=./lighthouse-mobile \
+          --chrome-flags="--headless --no-sandbox --disable-gpu" \
+          --only-categories=performance,accessibility,best-practices,seo
+        
+        # Arabic homepage audit
+        npx lighthouse http://localhost:3000 \
+          --preset=mobile \
+          --output=json,html \
+          --output-path=./lighthouse-arabic \
+          --chrome-flags="--headless --no-sandbox --disable-gpu" \
+          --only-categories=performance,accessibility,best-practices,seo
+        
+        # English homepage audit
+        npx lighthouse http://localhost:3000/en \
+          --preset=mobile \
+          --output=json,html \
+          --output-path=./lighthouse-english \
+          --chrome-flags="--headless --no-sandbox --disable-gpu" \
+          --only-categories=performance,accessibility,best-practices,seo
+
+    - name: Parse Lighthouse results
+      id: lighthouse-results
+      run: |
+        # Extract scores from desktop results
+        DESKTOP_PERFORMANCE=$(node -p "Math.round(require('./lighthouse-desktop.report.json').categories.performance.score * 100)")
+        DESKTOP_ACCESSIBILITY=$(node -p "Math.round(require('./lighthouse-desktop.report.json').categories.accessibility.score * 100)")
+        DESKTOP_BEST_PRACTICES=$(node -p "Math.round(require('./lighthouse-desktop.report.json').categories['best-practices'].score * 100)")
+        DESKTOP_SEO=$(node -p "Math.round(require('./lighthouse-desktop.report.json').categories.seo.score * 100)")
+        
+        # Extract scores from mobile results
+        MOBILE_PERFORMANCE=$(node -p "Math.round(require('./lighthouse-mobile.report.json').categories.performance.score * 100)")
+        MOBILE_ACCESSIBILITY=$(node -p "Math.round(require('./lighthouse-mobile.report.json').categories.accessibility.score * 100)")
+        MOBILE_BEST_PRACTICES=$(node -p "Math.round(require('./lighthouse-mobile.report.json').categories['best-practices'].score * 100)")
+        MOBILE_SEO=$(node -p "Math.round(require('./lighthouse-mobile.report.json').categories.seo.score * 100)")
+        
+        # Extract Core Web Vitals
+        LCP=$(node -p "Math.round(require('./lighthouse-mobile.report.json').audits['largest-contentful-paint'].numericValue)")
+        FID=$(node -p "Math.round(require('./lighthouse-mobile.report.json').audits['max-potential-fid'].numericValue)")
+        CLS=$(node -p "require('./lighthouse-mobile.report.json').audits['cumulative-layout-shift'].numericValue.toFixed(3)")
+        
+        # Set outputs
+        echo "desktop-performance=$DESKTOP_PERFORMANCE" >> $GITHUB_OUTPUT
+        echo "desktop-accessibility=$DESKTOP_ACCESSIBILITY" >> $GITHUB_OUTPUT
+        echo "desktop-best-practices=$DESKTOP_BEST_PRACTICES" >> $GITHUB_OUTPUT
+        echo "desktop-seo=$DESKTOP_SEO" >> $GITHUB_OUTPUT
+        echo "mobile-performance=$MOBILE_PERFORMANCE" >> $GITHUB_OUTPUT
+        echo "mobile-accessibility=$MOBILE_ACCESSIBILITY" >> $GITHUB_OUTPUT
+        echo "mobile-best-practices=$MOBILE_BEST_PRACTICES" >> $GITHUB_OUTPUT
+        echo "mobile-seo=$MOBILE_SEO" >> $GITHUB_OUTPUT
+        echo "lcp=$LCP" >> $GITHUB_OUTPUT
+        echo "fid=$FID" >> $GITHUB_OUTPUT
+        echo "cls=$CLS" >> $GITHUB_OUTPUT
+
+    - name: Generate performance report
+      run: |
+        cat > lighthouse-summary.md << EOF
+        # 📊 Lighthouse Performance Report
+        
+        **Generated:** $(date)
+        **Branch:** ${{ github.ref_name }}
+        **Commit:** ${{ github.sha }}
+        
+        ## 🎯 Lighthouse Scores
+        
+        ### Desktop Results
+        - **Performance:** ${{ steps.lighthouse-results.outputs.desktop-performance }}/100
+        - **Accessibility:** ${{ steps.lighthouse-results.outputs.desktop-accessibility }}/100  
+        - **Best Practices:** ${{ steps.lighthouse-results.outputs.desktop-best-practices }}/100
+        - **SEO:** ${{ steps.lighthouse-results.outputs.desktop-seo }}/100
+        
+        ### Mobile Results
+        - **Performance:** ${{ steps.lighthouse-results.outputs.mobile-performance }}/100
+        - **Accessibility:** ${{ steps.lighthouse-results.outputs.mobile-accessibility }}/100
+        - **Best Practices:** ${{ steps.lighthouse-results.outputs.mobile-best-practices }}/100
+        - **SEO:** ${{ steps.lighthouse-results.outputs.mobile-seo }}/100
+        
+        ## 🚀 Core Web Vitals (Mobile)
+        - **Largest Contentful Paint (LCP):** ${{ steps.lighthouse-results.outputs.lcp }}ms
+        - **First Input Delay (FID):** ${{ steps.lighthouse-results.outputs.fid }}ms
+        - **Cumulative Layout Shift (CLS):** ${{ steps.lighthouse-results.outputs.cls }}
+        
+        ## 📈 Performance Thresholds
+        - ✅ **Good:** 90-100
+        - ⚠️ **Needs Improvement:** 50-89
+        - ❌ **Poor:** 0-49
+        
+        ## 🎯 Core Web Vitals Thresholds
+        - **LCP:** ✅ Good (≤2.5s) | ⚠️ Needs Improvement (2.5s-4s) | ❌ Poor (>4s)
+        - **FID:** ✅ Good (≤100ms) | ⚠️ Needs Improvement (100ms-300ms) | ❌ Poor (>300ms)  
+        - **CLS:** ✅ Good (≤0.1) | ⚠️ Needs Improvement (0.1-0.25) | ❌ Poor (>0.25)
+        EOF
+
+    - name: Check performance thresholds
+      id: threshold-check
+      run: |
+        # Define thresholds
+        PERFORMANCE_THRESHOLD=80
+        ACCESSIBILITY_THRESHOLD=90
+        BEST_PRACTICES_THRESHOLD=90
+        SEO_THRESHOLD=90
+        
+        # Check mobile performance (most critical)
+        MOBILE_PERF=${{ steps.lighthouse-results.outputs.mobile-performance }}
+        MOBILE_A11Y=${{ steps.lighthouse-results.outputs.mobile-accessibility }}
+        MOBILE_BP=${{ steps.lighthouse-results.outputs.mobile-best-practices }}
+        MOBILE_SEO=${{ steps.lighthouse-results.outputs.mobile-seo }}
+        
+        # Check Core Web Vitals
+        LCP=${{ steps.lighthouse-results.outputs.lcp }}
+        FID=${{ steps.lighthouse-results.outputs.fid }}
+        CLS=${{ steps.lighthouse-results.outputs.cls }}
+        
+        FAILED=""
+        
+        if [ $MOBILE_PERF -lt $PERFORMANCE_THRESHOLD ]; then
+          FAILED="$FAILED Performance($MOBILE_PERF<$PERFORMANCE_THRESHOLD)"
+        fi
+        
+        if [ $MOBILE_A11Y -lt $ACCESSIBILITY_THRESHOLD ]; then
+          FAILED="$FAILED Accessibility($MOBILE_A11Y<$ACCESSIBILITY_THRESHOLD)"
+        fi
+        
+        if [ $MOBILE_BP -lt $BEST_PRACTICES_THRESHOLD ]; then
+          FAILED="$FAILED BestPractices($MOBILE_BP<$BEST_PRACTICES_THRESHOLD)"
+        fi
+        
+        if [ $MOBILE_SEO -lt $SEO_THRESHOLD ]; then
+          FAILED="$FAILED SEO($MOBILE_SEO<$SEO_THRESHOLD)"
+        fi
+        
+        # Core Web Vitals checks
+        if [ $LCP -gt 2500 ]; then
+          FAILED="$FAILED LCP(${LCP}ms>2500ms)"
+        fi
+        
+        if [ $FID -gt 100 ]; then
+          FAILED="$FAILED FID(${FID}ms>100ms)"
+        fi
+        
+        if [ $(echo "$CLS > 0.1" | bc -l) -eq 1 ]; then
+          FAILED="$FAILED CLS($CLS>0.1)"
+        fi
+        
+        if [ -n "$FAILED" ]; then
+          echo "threshold-passed=false" >> $GITHUB_OUTPUT
+          echo "failed-checks=$FAILED" >> $GITHUB_OUTPUT
+          echo "❌ Performance thresholds failed:$FAILED"
+        else
+          echo "threshold-passed=true" >> $GITHUB_OUTPUT
+          echo "✅ All performance thresholds passed!"
+        fi
+
+    - name: Upload Lighthouse reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: lighthouse-reports-${{ github.run_number }}
+        path: |
+          lighthouse-*.html
+          lighthouse-*.json
+          lighthouse-summary.md
+        retention-days: 30
+
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('lighthouse-summary.md', 'utf8');
+          
+          // Add threshold status
+          const thresholdPassed = '${{ steps.threshold-check.outputs.threshold-passed }}' === 'true';
+          const failedChecks = '${{ steps.threshold-check.outputs.failed-checks }}';
+          
+          let statusEmoji = thresholdPassed ? '✅' : '❌';
+          let statusText = thresholdPassed ? 'All thresholds passed!' : `Thresholds failed: ${failedChecks}`;
+          
+          const comment = `${statusEmoji} **Lighthouse CI Results**
+          
+          ${statusText}
+          
+          ${summary}
+          
+          📋 [View detailed reports in artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+    - name: Fail if performance thresholds not met
+      if: steps.threshold-check.outputs.threshold-passed == 'false'
+      run: |
+        echo "❌ Performance thresholds not met: ${{ steps.threshold-check.outputs.failed-checks }}"
+        echo "Please review the Lighthouse reports and optimize performance before merging."
+        exit 1
+
+    - name: Notify on performance regression
+      if: failure() && github.event_name == 'push'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `🚨 Performance Regression Detected - ${context.ref}`,
+            body: `
+            ## Performance Regression Alert
+            
+            **Branch:** ${context.ref}
+            **Commit:** ${context.sha}
+            **Run:** https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+            
+            Performance thresholds have not been met:
+            ${{ steps.threshold-check.outputs.failed-checks }}
+            
+            Please review the Lighthouse reports and address the performance issues.
+            
+            ### Recommended Actions:
+            - [ ] Review Lighthouse reports for specific recommendations
+            - [ ] Optimize images and assets
+            - [ ] Review bundle size and code splitting
+            - [ ] Check Core Web Vitals metrics
+            - [ ] Test on slower network conditions
+            
+            This issue will be automatically closed when performance improves.
+            `,
+            labels: ['performance', 'regression', 'priority-high']
+          });
+          
+          console.log(`Created issue #${issue.data.number} for performance regression`);
+
+  # Separate job for monitoring deployment performance
+  deployment-health-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: lighthouse-ci
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Wait for deployment
+      run: |
+        echo "Waiting for deployment to complete..."
+        sleep 180  # Wait 3 minutes for deployment
+
+    - name: Check production health
+      run: |
+        HEALTH_URL="${{ secrets.PRODUCTION_URL }}/api/health"
+        
+        echo "Checking health at: $HEALTH_URL"
+        
+        # Perform health check with retries
+        for i in {1..5}; do
+          if curl -f -s "$HEALTH_URL" > health-response.json; then
+            echo "✅ Health check passed on attempt $i"
+            cat health-response.json | jq '.'
+            break
+          else
+            echo "❌ Health check failed on attempt $i"
+            if [ $i -eq 5 ]; then
+              echo "Health check failed after 5 attempts"
+              exit 1
+            fi
+            sleep 30
+          fi
+        done
+
+    - name: Performance smoke test
+      run: |
+        SITE_URL="${{ secrets.PRODUCTION_URL }}"
+        
+        echo "Running performance smoke test on: $SITE_URL"
+        
+        # Quick Lighthouse audit focused on performance
+        npx lighthouse "$SITE_URL" \
+          --preset=mobile \
+          --output=json \
+          --output-path=./production-performance.json \
+          --chrome-flags="--headless --no-sandbox --disable-gpu" \
+          --only-categories=performance \
+          --quiet
+        
+        # Extract performance score
+        PERF_SCORE=$(node -p "Math.round(require('./production-performance.json').categories.performance.score * 100)")
+        
+        echo "Production performance score: $PERF_SCORE/100"
+        
+        if [ $PERF_SCORE -lt 80 ]; then
+          echo "❌ Production performance score ($PERF_SCORE) below threshold (80)"
+          exit 1
+        else
+          echo "✅ Production performance score meets threshold"
+        fi

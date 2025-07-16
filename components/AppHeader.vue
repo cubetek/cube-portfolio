@@ -11,7 +11,7 @@
           variant="ghost"
           class="flex items-center space-x-2 text-xl font-bold scale-hover link-focus p-0"
           :aria-label="$t('nav.home')"
-          :label="$t('site.title')"
+          :label="profile.name || $t('site.title')"
         />
       </div>
 
@@ -100,6 +100,9 @@
 </template>
 
 <script setup lang="ts">
+// Use centralized personal data
+const { profile } = usePersonalData()
+
 interface NavigationItem {
   path: string
   label: string

@@ -1,0 +1,249 @@
+# Netlify Configuration for Nuxt 3 Multilingual Personal Website
+# This configuration supports both SSR and SSG deployment modes
+# with comprehensive multilingual routing, form handling, and optimization
+
+[build]
+  # Build command for Nuxt 3 - can be switched between build (SSR) and generate (SSG)
+  command = "pnpm run build"
+  
+  # Publish directory for Nuxt 3 output
+  publish = ".output/public"
+  
+  # Functions directory for server-side code
+  functions = ".output/server"
+  
+  # Edge functions directory for edge computing
+  edge_functions = "netlify/edge-functions"
+  
+  # Build processing timeout (in minutes)
+  command_timeout = 15
+
+[build.environment]
+  # Node.js version for builds
+  NODE_VERSION = "18"
+  
+  # Package manager
+  NPM_FLAGS = "--prefix=/dev/null"
+  PNPM_VERSION = "8"
+  
+  # Build optimizations
+  NODE_OPTIONS = "--max-old-space-size=4096"
+  
+  # Nuxt specific environment variables
+  NUXT_TELEMETRY_DISABLED = "1"
+  NITRO_PRESET = "netlify"
+
+# Production environment configuration
+[context.production]
+  command = "pnpm run build"
+  
+  [context.production.environment]
+    # Production-specific environment variables
+    NODE_ENV = "production"
+    NUXT_PUBLIC_SITE_URL = "https://your-domain.netlify.app"
+    NITRO_PRESET = "netlify"
+
+# Branch-specific deployment for staging
+[context.develop]
+  command = "pnpm run build"
+  
+  [context.develop.environment]
+    NODE_ENV = "staging"
+    NUXT_PUBLIC_SITE_URL = "https://develop--your-site.netlify.app"
+    NITRO_PRESET = "netlify"
+
+# Deploy Preview configuration
+[context.deploy-preview]
+  command = "pnpm run build"
+  
+  [context.deploy-preview.environment]
+    NODE_ENV = "preview"
+    NUXT_PUBLIC_SITE_URL = "https://deploy-preview-$REVIEW_ID--your-site.netlify.app"
+    NITRO_PRESET = "netlify"
+
+# Form handling configuration
+[[forms]]
+  # Contact form with spam protection
+  name = "contact"
+  action = "/contact/success"
+  
+  # Spam protection settings
+  [forms.settings]
+    honeypot = "bot-field"
+    recaptcha = true
+
+[[forms]]
+  # Newsletter subscription form
+  name = "newsletter"
+  action = "/newsletter/success"
+  
+  [forms.settings]
+    honeypot = "bot-field"
+
+# Redirect rules for multilingual routing and SPA fallback
+[[redirects]]
+  # Force HTTPS
+  from = "http://your-domain.netlify.app/*"
+  to = "https://your-domain.netlify.app/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  # Arabic language redirects (default language, no prefix)
+  from = "/ar/*"
+  to = "/:splat"
+  status = 301
+
+[[redirects]]
+  # Ensure English routes have /en prefix
+  from = "/blog/*"
+  to = "/en/blog/:splat"
+  status = 301
+  conditions = {Language = ["en"]}
+
+[[redirects]]
+  # Legacy URL support - old blog URLs
+  from = "/posts/*"
+  to = "/blog/:splat"
+  status = 301
+
+[[redirects]]
+  # Legacy URL support - old portfolio URLs
+  from = "/portfolio/*"
+  to = "/projects/:splat"
+  status = 301
+
+[[redirects]]
+  # SPA fallback for client-side routing
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Header configuration for security and performance
+[[headers]]
+  for = "/*"
+  
+  [headers.values]
+    # Security headers
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    
+    # HSTS (HTTP Strict Transport Security)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    
+    # Content Security Policy
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:; frame-src 'self'; object-src 'none'; base-uri 'self';"
+
+[[headers]]
+  for = "/assets/*"
+  
+  [headers.values]
+    # Cache static assets for 1 year
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/_nuxt/*"
+  
+  [headers.values]
+    # Cache Nuxt assets for 1 year
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/api/*"
+  
+  [headers.values]
+    # API headers
+    Cache-Control = "no-cache"
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+[[headers]]
+  for = "/*.woff2"
+  
+  [headers.values]
+    # Font files caching
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
+
+# Edge functions configuration
+[[edge_functions]]
+  function = "ssr"
+  path = "/*"
+
+[[edge_functions]]
+  function = "i18n-redirect"
+  path = "/"
+
+# Build plugins for optimization
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[[plugins]]
+  package = "netlify-plugin-sitemap"
+  
+  [plugins.inputs]
+    baseUrl = "https://your-domain.netlify.app"
+    pretty = true
+    trailingSlash = false
+
+[[plugins]]
+  package = "netlify-plugin-lighthouse"
+  
+  [plugins.inputs]
+    audits = ["performance", "accessibility", "best-practices", "seo"]
+
+[[plugins]]
+  package = "netlify-plugin-cache"
+  
+  [plugins.inputs]
+    paths = ["node_modules", ".pnpm-store"]
+
+# Split testing configuration
+[[split_tests]]
+  id = "homepage-hero"
+  path = "/"
+  branches = [
+    { branch = "main", percentage = 90 },
+    { branch = "hero-variant", percentage = 10 }
+  ]
+
+# Functions configuration for serverless functions
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  
+  [functions.environment]
+    NODE_ENV = "production"
+
+# Build processing configuration
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.images]
+  compress = true
+
+# Development configuration
+[dev]
+  command = "pnpm run dev"
+  port = 3000
+  publish = ".output/public"
+  functions = ".output/server"
+  
+  [dev.environment]
+    NODE_ENV = "development"
+    NUXT_PUBLIC_SITE_URL = "http://localhost:3000"

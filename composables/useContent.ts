@@ -157,18 +157,30 @@ export function useContentBySlug(slug: string, language?: ContentLanguage): Sing
       loading.value = true
       error.value = null
 
-      // Try both collections to find the content
+      // Get all content and filter by slug and language
       let result = null
       
       try {
-        result = await queryCollection('blog')
-          .where('slug', '=', slug)
-          .first()
-      } catch {
-        // If not found in blog, try pages
-        result = await queryCollection('pages')
-          .where('slug', '=', slug)
-          .first()
+        // First try blog collection
+        const blogPosts = await queryCollection('blog').all()
+        result = blogPosts.find(post => 
+          post.slug === slug && 
+          post.path && 
+          post.path.startsWith(`/${lang}/`)
+        )
+        
+        if (!result) {
+          // If not found in blog, try pages
+          const pages = await queryCollection('pages').all()
+          result = pages.find(page => 
+            page.slug === slug && 
+            page.path && 
+            page.path.startsWith(`/${lang}/`)
+          )
+        }
+      } catch (queryError) {
+        console.warn('Error in content query:', queryError)
+        result = null
       }
 
       data.value = result
@@ -207,14 +219,22 @@ export function useContentByPath(path: string): SingleContentResponse {
       loading.value = true
       error.value = null
 
-      // Try to find content by path in both collections
+      // Get all content and filter by path
       let result = null
       
       try {
-        result = await queryCollection('pages').path(path).first()
-      } catch {
-        // If not found in pages, try blog
-        result = await queryCollection('blog').path(path).first()
+        // First try pages collection
+        const pages = await queryCollection('pages').all()
+        result = pages.find(page => page.path === path)
+        
+        if (!result) {
+          // If not found in pages, try blog
+          const blogPosts = await queryCollection('blog').all()
+          result = blogPosts.find(post => post.path === path)
+        }
+      } catch (queryError) {
+        console.warn('Error in content by path query:', queryError)
+        result = null
       }
 
       data.value = result

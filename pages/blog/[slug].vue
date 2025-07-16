@@ -256,29 +256,51 @@ const slug = computed(() => route.params.slug as string)
 
 // Fetch the blog post
 const { data: post, pending, error } = await useAsyncData(`blog-post-${slug.value}`, async () => {
-  const locale = useI18n().locale.value
-  return await queryCollection('blog')
-    .path(`/${locale}/blog/${slug.value}`)
-    .first()
+  try {
+    const locale = useI18n().locale.value
+    const targetPath = `/${locale}/blog/${slug.value}`
+    
+    // Get all blog posts and find the matching one
+    const allPosts = await queryCollection('blog').all()
+    const matchedPost = allPosts.find(post => 
+      post.path === targetPath || 
+      (post.slug === slug.value && post.path.startsWith(`/${locale}/blog/`))
+    )
+    
+    return matchedPost || null
+  } catch (error) {
+    console.error('Error fetching blog post:', error)
+    return null
+  }
 })
 
 // Fetch related posts
 const { data: relatedPosts } = await useAsyncData(`related-posts-${slug.value}`, async () => {
-  if (!post.value) return []
-  
-  const locale = useI18n().locale.value
-  const allPosts = await queryCollection('blog')
-    .path(`/${locale}/blog/**`)
-    .all()
-  
-  // Find posts with similar category or tags, excluding current post
-  return allPosts
-    .filter(p => 
-      p.path !== post.value?.path && 
-      (p.category === post.value?.category || 
-      (post.value?.tags && p.tags?.some((tag: string) => post.value?.tags?.includes(tag))))
+  try {
+    if (!post.value) return []
+    
+    const locale = useI18n().locale.value
+    
+    // Get all blog posts and filter by language
+    const allPosts = await queryCollection('blog').all()
+    const languagePosts = allPosts.filter(p => 
+      p.path && p.path.startsWith(`/${locale}/blog/`)
     )
-    .slice(0, 3)
+    
+    // Find posts with similar category or tags, excluding current post
+    const related = languagePosts
+      .filter(p => 
+        p.path !== post.value?.path && 
+        (p.category === post.value?.category || 
+        (post.value?.tags && p.tags?.some((tag: string) => post.value?.tags?.includes(tag))))
+      )
+      .slice(0, 3)
+    
+    return related
+  } catch (error) {
+    console.error('Error fetching related posts:', error)
+    return []
+  }
 })
 
 // Computed properties

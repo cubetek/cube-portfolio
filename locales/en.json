@@ -208,7 +208,10 @@
       "frontend": "Frontend Development",
       "backend": "Backend Development",
       "devops": "DevOps & Cloud",
-      "design": "Design & UX"
+      "design": "Design & UX",
+      "frontend-development": "Frontend Development",
+      "server-development": "Server Development",
+      "development-tools": "Development Tools"
     },
     "levels": {
       "beginner": "Beginner",
@@ -271,7 +274,56 @@
     "title": "Let's Work Together",
     "description": "Ready to bring your ideas to life? Let's discuss your next project.",
     "email": "Send Email",
-    "schedule": "Schedule Meeting"
+    "schedule": "Schedule Meeting",
+    "form": {
+      "title": "Send Me a Message",
+      "name": {
+        "label": "Full Name",
+        "placeholder": "Enter your full name",
+        "help": "Please provide your full name for personalized communication"
+      },
+      "email": {
+        "label": "Email Address",
+        "placeholder": "Enter your email address",
+        "help": "I'll use this email to respond to your message"
+      },
+      "subject": {
+        "label": "Subject",
+        "placeholder": "What's this about?",
+        "help": "Optional: Brief description of your inquiry"
+      },
+      "message": {
+        "label": "Message",
+        "placeholder": "Tell me about your project or how I can help...",
+        "help": "Please provide details about your inquiry or project"
+      },
+      "submit": "Send Message",
+      "sending": "Sending...",
+      "sendAnother": "Send Another Message",
+      "defaultSubject": "Contact from Website",
+      "privacy": "Your information is secure and will never be shared.",
+      "success": {
+        "title": "Message Sent Successfully!",
+        "message": "Thank you for reaching out. I'll get back to you within 24-48 hours.",
+        "followup": "I appreciate you taking the time to contact me. I'll review your message and respond as soon as possible."
+      },
+      "error": {
+        "title": "Failed to Send Message",
+        "general": "There was an error sending your message. Please try again or contact me directly via email.",
+        "validation": "Please check your input and try again",
+        "checkFields": "Please review the highlighted fields and correct any errors"
+      },
+      "reset": "Form Reset",
+      "resetDescription": "The form has been cleared. You can now enter new information.",
+      "validation": {
+        "nameRequired": "Name is required",
+        "nameMinLength": "Name must be at least 2 characters",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "messageRequired": "Message is required",
+        "messageMinLength": "Message must be at least 10 characters"
+      }
+    }
   },
   "accessibility": {
     "skipToContent": "Skip to main content"
@@ -303,6 +355,7 @@
     "readingTime": "Reading Time",
     "dateRange": "Date Range",
     "sortBy": "Sort by",
+    "selectSort": "Select sort option...",
     "category": "Category",
     "tags": "Tags",
     "allCategories": "All Categories",

@@ -503,9 +503,8 @@ export function usePerformanceOptimization() {
       optimizeChunks()
     })
 
-    // Preload critical resources
-    await preloadFont('/fonts/inter.woff2', 'Inter')
-    await preloadFont('/fonts/tajawal.woff2', 'Tajawal')
+    // Google Fonts module handles font preloading automatically
+    // No manual preloading needed
   }
 
   const getOptimizationReport = () => {

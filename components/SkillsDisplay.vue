@@ -1,127 +1,68 @@
 <template>
-  <div class="skills-display">
-    <div class="skills-header">
-      <h2 class="skills-title">
+  <div class="py-12 max-w-7xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
         {{ $t('skills.title') || 'Skills & Technologies' }}
       </h2>
-      <p class="skills-description">
+      <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
         {{ $t('skills.description') || 'Technologies I work with and expertise levels' }}
       </p>
     </div>
 
     <!-- Skill Categories -->
-    <div class="skills-categories">
+    <div class="space-y-12">
       <div
         v-for="category in skillCategories"
         :key="category.id"
-        class="skill-category"
+        class="space-y-6"
       >
-        <div class="category-header">
-          <div class="category-icon">
-            <UIcon :name="category.icon" class="icon" />
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
+            <UIcon :name="category.icon" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
           </div>
-          <h3 class="category-title">
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ $t(`skills.categories.${category.id}`) || category.name }}
           </h3>
         </div>
 
-        <div class="skills-grid">
-          <div
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <UCard
             v-for="skill in category.skills"
             :key="skill.id"
-            class="skill-card"
+            class="hover:scale-105 transition-transform duration-300 cursor-pointer"
             @mouseenter="animateProgress(skill.id)"
           >
-            <div class="skill-icon">
-              <component
-                :is="skill.iconComponent || 'div'"
-                :class="skill.iconClass"
-              >
-                <UIcon v-if="skill.icon" :name="skill.icon" />
-              </component>
-            </div>
+            <template #header>
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 flex items-center justify-center">
+                  <div>
+                    <UIcon v-if="skill.icon" :name="skill.icon" class="w-6 h-6" />
+                  </div>
+                </div>
+                <h4 class="font-semibold text-gray-900 dark:text-white">{{ skill.name }}</h4>
+              </div>
+            </template>
             
-            <div class="skill-info">
-              <h4 class="skill-name">{{ skill.name }}</h4>
-              <p class="skill-description">{{ skill.description }}</p>
+            <div class="space-y-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ skill.description }}</p>
               
-              <div class="skill-level">
-                <div class="level-label">
-                  <span class="level-text">
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {{ $t(`skills.levels.${skill.level}`) || skill.level }}
                   </span>
-                  <span class="level-percentage">{{ skill.percentage }}%</span>
+                  <span class="text-sm font-semibold text-primary-600 dark:text-primary-400">{{ skill.percentage }}%</span>
                 </div>
-                <div class="progress-bar">
-                  <div
-                    :id="`progress-${skill.id}`"
-                    class="progress-fill"
-                    :style="{ 
-                      width: `${animatedProgress[skill.id] || 0}%`,
-                      backgroundColor: skill.color || 'var(--color-primary-600)'
-                    }"
+                
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                  <div 
+                    class="h-full bg-gradient-to-r from-primary-500 to-green-500 dark:from-primary-400 dark:to-green-400 rounded-full transition-all duration-1000 ease-out"
+                    :style="{ width: animatedSkills[skill.id] ? `${skill.percentage}%` : '0%' }"
                   ></div>
                 </div>
               </div>
-
-              <div class="skill-tags">
-                <span
-                  v-for="tag in skill.tags"
-                  :key="tag"
-                  class="skill-tag"
-                >
-                  {{ tag }}
-                </span>
-              </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Technologies Cloud -->
-    <div class="tech-cloud">
-      <h3 class="cloud-title">
-        {{ $t('skills.techCloud') || 'Technologies I Use' }}
-      </h3>
-      <div class="tech-items">
-        <span
-          v-for="tech in techCloud"
-          :key="tech.name"
-          class="tech-item"
-          :style="{ 
-            fontSize: `${tech.weight}rem`,
-            color: tech.color || 'var(--color-gray-600)'
-          }"
-        >
-          {{ tech.name }}
-        </span>
-      </div>
-    </div>
-
-    <!-- Certifications -->
-    <div class="certifications">
-      <h3 class="cert-title">
-        {{ $t('skills.certifications') || 'Certifications' }}
-      </h3>
-      <div class="cert-grid">
-        <div
-          v-for="cert in certifications"
-          :key="cert.id"
-          class="cert-card"
-        >
-          <div class="cert-logo">
-            <NuxtImg
-              :src="cert.logo"
-              :alt="cert.name"
-              class="cert-image"
-            />
-          </div>
-          <div class="cert-info">
-            <h4 class="cert-name">{{ cert.name }}</h4>
-            <p class="cert-issuer">{{ cert.issuer }}</p>
-            <p class="cert-date">{{ formatDate(cert.date) }}</p>
-          </div>
+          </UCard>
         </div>
       </div>
     </div>
@@ -130,6 +71,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import type { SkillLevel } from '~/types/personal'
 
 // Types
 interface Skill {
@@ -170,174 +112,30 @@ interface Certification {
 const { locale } = useI18n()
 
 // State
-const animatedProgress = reactive<Record<string, number>>({})
+const animatedSkills = reactive<Record<string, boolean>>({})
 
-// Skills data
-const skillCategories = ref<SkillCategory[]>([
-  {
-    id: 'frontend',
-    name: 'Frontend Development',
-    icon: 'i-heroicons-computer-desktop',
-    skills: [
-      {
-        id: 'vue',
-        name: 'Vue.js',
-        description: 'Progressive JavaScript framework',
-        level: 'expert',
-        percentage: 95,
-        color: '#4FC08D',
-        tags: ['Vue 3', 'Composition API', 'Pinia']
-      },
-      {
-        id: 'nuxt',
-        name: 'Nuxt 3',
-        description: 'Vue-based framework for SSR/SSG',
-        level: 'expert',
-        percentage: 90,
-        color: '#00DC82',
-        tags: ['SSR', 'SSG', 'Nitro']
-      },
-      {
-        id: 'react',
-        name: 'React',
-        description: 'JavaScript library for UI',
-        level: 'advanced',
-        percentage: 85,
-        color: '#61DAFB',
-        tags: ['Hooks', 'Context', 'Next.js']
-      },
-      {
-        id: 'typescript',
-        name: 'TypeScript',
-        description: 'Typed superset of JavaScript',
-        level: 'expert',
-        percentage: 92,
-        color: '#3178C6',
-        tags: ['Static Typing', 'Generics', 'Decorators']
-      }
-    ]
-  },
-  {
-    id: 'backend',
-    name: 'Backend Development',
-    icon: 'i-heroicons-server',
-    skills: [
-      {
-        id: 'nodejs',
-        name: 'Node.js',
-        description: 'JavaScript runtime environment',
-        level: 'expert',
-        percentage: 88,
-        color: '#339933',
-        tags: ['Express', 'Fastify', 'NestJS']
-      },
-      {
-        id: 'python',
-        name: 'Python',
-        description: 'High-level programming language',
-        level: 'advanced',
-        percentage: 82,
-        color: '#3776AB',
-        tags: ['Django', 'FastAPI', 'Flask']
-      },
-      {
-        id: 'graphql',
-        name: 'GraphQL',
-        description: 'Query language for APIs',
-        level: 'advanced',
-        percentage: 78,
-        color: '#E10098',
-        tags: ['Apollo', 'Prisma', 'Relay']
-      },
-      {
-        id: 'postgresql',
-        name: 'PostgreSQL',
-        description: 'Object-relational database',
-        level: 'advanced',
-        percentage: 80,
-        color: '#336791',
-        tags: ['SQL', 'Indexing', 'Optimization']
-      }
-    ]
-  },
-  {
-    id: 'devops',
-    name: 'DevOps & Cloud',
-    icon: 'i-heroicons-cloud',
-    skills: [
-      {
-        id: 'docker',
-        name: 'Docker',
-        description: 'Containerization platform',
-        level: 'advanced',
-        percentage: 85,
-        color: '#2496ED',
-        tags: ['Containers', 'Docker Compose', 'Multi-stage']
-      },
-      {
-        id: 'aws',
-        name: 'AWS',
-        description: 'Amazon Web Services',
-        level: 'intermediate',
-        percentage: 72,
-        color: '#FF9900',
-        tags: ['EC2', 'S3', 'Lambda', 'RDS']
-      },
-      {
-        id: 'kubernetes',
-        name: 'Kubernetes',
-        description: 'Container orchestration',
-        level: 'intermediate',
-        percentage: 68,
-        color: '#326CE5',
-        tags: ['Pods', 'Services', 'Deployments']
-      },
-      {
-        id: 'ci-cd',
-        name: 'CI/CD',
-        description: 'Continuous Integration/Deployment',
-        level: 'advanced',
-        percentage: 82,
-        color: '#0066CC',
-        tags: ['GitHub Actions', 'Jenkins', 'GitLab CI']
-      }
-    ]
-  },
-  {
-    id: 'design',
-    name: 'Design & UX',
-    icon: 'i-heroicons-paint-brush',
-    skills: [
-      {
-        id: 'figma',
-        name: 'Figma',
-        description: 'Design and prototyping tool',
-        level: 'advanced',
-        percentage: 88,
-        color: '#F24E1E',
-        tags: ['Prototyping', 'Design Systems', 'Collaboration']
-      },
-      {
-        id: 'tailwind',
-        name: 'Tailwind CSS',
-        description: 'Utility-first CSS framework',
-        level: 'expert',
-        percentage: 95,
-        color: '#06B6D4',
-        tags: ['Utility Classes', 'Responsive', 'Dark Mode']
-      },
-      {
-        id: 'ui-ux',
-        name: 'UI/UX Design',
-        description: 'User interface and experience design',
-        level: 'advanced',
-        percentage: 80,
-        color: '#FF6B6B',
-        tags: ['User Research', 'Wireframing', 'Usability']
-      }
-    ]
-  }
-])
+// Use centralized personal data
+const { skills } = usePersonalData()
+const { skill: skillFormatters } = personalDataFormatters
+
+// Transform personal data to component format
+const skillCategories = computed(() => {
+  return skills.value.map(category => ({
+    id: category.name.toLowerCase().replace(/\s+/g, '-'),
+    name: category.name,
+    icon: category.icon || 'i-heroicons-code-bracket',
+    skills: category.skills.map(skill => ({
+      id: skill.name.toLowerCase().replace(/\s+/g, '-'),
+      name: skill.name,
+      description: skill.description || '',
+      level: skill.level,
+      percentage: skillFormatters.getSkillLevelProgress(skill.level as SkillLevel),
+      color: '#4F46E5', // Default color, could be enhanced
+      tags: [], // Could be enhanced with skill-specific tags
+      icon: skill.icon || 'i-heroicons-code-bracket'
+    }))
+  }))
+})
 
 // Tech cloud data
 const techCloud = ref<TechItem[]>([
@@ -385,26 +183,9 @@ const certifications = ref<Certification[]>([
 
 // Methods
 const animateProgress = (skillId: string) => {
-  const skill = skillCategories.value
-    .flatMap(cat => cat.skills)
-    .find(s => s.id === skillId)
-  
-  if (!skill) return
-  
-  const targetPercentage = skill.percentage
-  const duration = 1000
-  const steps = 60
-  const increment = targetPercentage / steps
-  
-  let currentStep = 0
-  const interval = setInterval(() => {
-    currentStep++
-    animatedProgress[skillId] = Math.min(increment * currentStep, targetPercentage)
-    
-    if (currentStep >= steps) {
-      clearInterval(interval)
-    }
-  }, duration / steps)
+  if (!animatedSkills[skillId]) {
+    animatedSkills[skillId] = true
+  }
 }
 
 const formatDate = (dateString: string) => {
@@ -416,354 +197,31 @@ const formatDate = (dateString: string) => {
 
 // Lifecycle
 onMounted(() => {
-  // Initialize progress animations
+  // Initialize animation states
   skillCategories.value.forEach(category => {
     category.skills.forEach(skill => {
-      animatedProgress[skill.id] = 0
+      animatedSkills[skill.id] = false
     })
   })
 })
 </script>
 
 <style scoped>
-.skills-display {
-  padding: 4rem 0;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.skills-header {
-  text-align: center;
-  margin-bottom: 4rem;
-}
-
-.skills-title {
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700;
-  color: var(--color-gray-900);
-  margin-bottom: 1rem;
-}
-
-.skills-description {
-  font-size: 1.125rem;
-  color: var(--color-gray-600);
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.skills-categories {
-  display: flex;
-  flex-direction: column;
-  gap: 4rem;
-  margin-bottom: 4rem;
-}
-
-.skill-category {
-  background: var(--color-white);
-  border-radius: 1.5rem;
-  padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.category-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.category-icon {
-  width: 3rem;
-  height: 3rem;
-  background: var(--color-primary-100);
-  border-radius: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.category-icon .icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: var(--color-primary-600);
-}
-
-.category-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-gray-900);
-}
-
-.skills-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.skill-card {
-  background: var(--color-gray-50);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.skill-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.skill-icon {
-  width: 3rem;
-  height: 3rem;
-  margin-bottom: 1rem;
-}
-
-.skill-info {
-  flex: 1;
-}
-
-.skill-name {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-gray-900);
-  margin-bottom: 0.5rem;
-}
-
-.skill-description {
-  color: var(--color-gray-600);
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
-}
-
-.skill-level {
-  margin-bottom: 1rem;
-}
-
-.level-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.level-text {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-gray-700);
-  text-transform: capitalize;
-}
-
-.level-percentage {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-primary-600);
-}
-
-.progress-bar {
-  height: 0.5rem;
-  background: var(--color-gray-200);
-  border-radius: 0.25rem;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--color-primary-600);
-  border-radius: 0.25rem;
-  transition: width 0.3s ease;
-}
-
-.skill-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.skill-tag {
-  background: var(--color-gray-200);
-  color: var(--color-gray-700);
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.tech-cloud {
-  background: var(--color-gray-50);
-  border-radius: 1.5rem;
-  padding: 3rem;
-  margin-bottom: 4rem;
-  text-align: center;
-}
-
-.cloud-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-gray-900);
-  margin-bottom: 2rem;
-}
-
-.tech-items {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-  line-height: 1.5;
-}
-
-.tech-item {
-  font-weight: 600;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.tech-item:hover {
-  transform: scale(1.1);
-  opacity: 0.8;
-}
-
-.certifications {
-  background: var(--color-white);
-  border-radius: 1.5rem;
-  padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.cert-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-gray-900);
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.cert-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
-
-.cert-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: var(--color-gray-50);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-}
-
-.cert-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.cert-logo {
-  width: 3rem;
-  height: 3rem;
-  flex-shrink: 0;
-}
-
-.cert-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.cert-info {
-  flex: 1;
-}
-
-.cert-name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-gray-900);
-  margin-bottom: 0.25rem;
-}
-
-.cert-issuer {
-  font-size: 0.875rem;
-  color: var(--color-gray-600);
-  margin-bottom: 0.25rem;
-}
-
-.cert-date {
-  font-size: 0.75rem;
-  color: var(--color-gray-500);
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .skills-title,
-  .category-title,
-  .cloud-title,
-  .cert-title {
-    color: var(--color-gray-100);
-  }
-  
-  .skills-description {
-    color: var(--color-gray-400);
-  }
-  
-  .skill-category,
-  .certifications {
-    background: var(--color-gray-800);
-  }
-  
-  .skill-card,
-  .cert-card {
-    background: var(--color-gray-700);
-  }
-  
-  .skill-name,
-  .cert-name {
-    color: var(--color-gray-100);
-  }
-  
-  .skill-description,
-  .cert-issuer {
-    color: var(--color-gray-400);
-  }
-  
-  .tech-cloud {
-    background: var(--color-gray-800);
-  }
-}
-
-/* RTL support */
-[dir="rtl"] .category-header {
-  flex-direction: row-reverse;
-}
-
-[dir="rtl"] .level-label {
-  flex-direction: row-reverse;
-}
-
-[dir="rtl"] .cert-card {
-  flex-direction: row-reverse;
-}
-
-/* Responsive design */
+/* Minimal styles needed for animations and responsiveness */
 @media (max-width: 768px) {
-  .skills-display {
-    padding: 2rem 1rem;
-  }
-  
-  .skills-grid {
+  .grid {
     grid-template-columns: 1fr;
   }
-  
-  .cert-grid {
-    grid-template-columns: 1fr;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transition-transform,
+  .transition-all {
+    transition: none;
   }
   
-  .tech-cloud {
-    padding: 2rem;
-  }
-  
-  .tech-items {
-    gap: 0.5rem;
+  .hover\:scale-105:hover {
+    transform: none;
   }
 }
 </style>

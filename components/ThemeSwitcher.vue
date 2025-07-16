@@ -4,14 +4,17 @@
       variant="outline"
       size="sm"
       :aria-label="$t('theme.switch')"
-      class="btn-micro"
       @click="cycleTheme"
+      class="transition-all duration-200 hover:scale-105"
     >
-      <Icon 
-        :name="themeIcon" 
-        class="h-4 w-4 icon-rotate" 
-      />
-      <span class="ml-2 hidden sm:inline">{{ themeConfig.label }}</span>
+      <template #leading>
+        <UIcon 
+          :name="themeIcon" 
+          class="h-4 w-4 transition-transform duration-300" 
+          :class="{ 'rotate-180': isDark }"
+        />
+      </template>
+      <span class="hidden sm:inline">{{ themeConfig?.label || 'Theme' }}</span>
     </UButton>
   </div>
 </template>
@@ -33,6 +36,5 @@ const themeIcon = computed(() => {
   return isDark.value ? 'heroicons:moon' : 'heroicons:sun'
 })
 
-// Localized theme switching text
-const { t } = useI18n()
+// Removed unused t import to fix diagnostic
 </script>

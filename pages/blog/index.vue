@@ -183,13 +183,26 @@ const activeFilters = ref<any>({})
 const locale = useI18n().locale.value || 'en'
 console.log('Fetching blog posts for locale:', locale)
 
-const { data: posts } = await useAsyncData('blog-posts', () => 
-  queryCollection('blog')
-    .where('path', 'LIKE', `/${locale}/blog%`)
-    .where('published', '=', true)
-    .order('date', 'DESC')
-    .all()
-)
+const { data: posts } = await useAsyncData('blog-posts', async () => {
+  try {
+    // Get all blog posts and filter by language
+    const allPosts = await queryCollection('blog')
+      .where('published', '=', true)
+      .order('date', 'DESC')
+      .all()
+    
+    // Filter posts by language based on path
+    const filteredPosts = allPosts.filter(post => {
+      if (!post.path) return false
+      return post.path.startsWith(`/${locale}/blog/`)
+    })
+    
+    return filteredPosts
+  } catch (error) {
+    console.error('Error fetching blog posts:', error)
+    return []
+  }
+})
 
 // Computed properties
 const categories = computed(() => {

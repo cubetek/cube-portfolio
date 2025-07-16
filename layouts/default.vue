@@ -66,23 +66,10 @@ useHead({
   ]
 })
 
-// Performance optimization: Preload critical resources
+// Performance optimization: Google Fonts module handles font preloading
 onMounted(() => {
-  // Preload fonts
-  const fontLinks = [
-    { href: '/fonts/inter-var.woff2', as: 'font', type: 'font/woff2' },
-    { href: '/fonts/amiri-var.woff2', as: 'font', type: 'font/woff2' }
-  ]
-  
-  fontLinks.forEach(font => {
-    const link = document.createElement('link')
-    link.rel = 'preload'
-    link.href = font.href
-    link.as = font.as
-    link.type = font.type
-    link.crossOrigin = 'anonymous'
-    document.head.appendChild(link)
-  })
+  // Google Fonts module automatically handles font preloading
+  // No manual preload needed
 })
 
 // Handle focus management for accessibility

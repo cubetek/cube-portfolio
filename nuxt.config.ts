@@ -5,6 +5,15 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-13', // Updated to current date for latest features
   devtools: { enabled: true },
+  
+  // SSR configuration - enable for static generation
+  ssr: true,
+  
+  // App configuration for GitHub Pages
+  app: {
+    baseURL: process.env.NUXT_APP_BASE_URL || '/',
+    buildAssetsDir: '_nuxt/'
+  },
 
   // Modules configuration
   modules: [
@@ -54,13 +63,23 @@ export default defineNuxtConfig({
 
   // Build configuration for optimal performance
   build: {
-    transpile: ['@nuxt/image']
+    // transpile: ['@nuxt/image']
   },
 
   // Vite optimization for code splitting and bundle optimization
   vite: {
     plugins: [
       tailwindcss(),
+      // Bundle analyzer for development insights
+      ...(process.env.ANALYZE === 'true' ? [
+        (await import('rollup-plugin-visualizer')).visualizer({
+          filename: '.nuxt/stats.html',
+          open: true,
+          gzipSize: true,
+          brotliSize: true,
+          template: 'treemap' // 'treemap', 'sunburst', 'network'
+        })
+      ] : [])
     ],
     build: {
       // Code splitting configuration
@@ -122,10 +141,105 @@ export default defineNuxtConfig({
     }
   },
 
-  // Development settings
+  // Nitro configuration for performance optimization
   nitro: {
-    preset: 'node-server',
-    compressPublicAssets: true
+    preset: process.env.NUXT_PRESET || 'node-server',
+    compressPublicAssets: true,
+    // Enable compression for all assets
+    compression: {
+      gzip: true,
+      brotli: true
+    },
+    // Prerender configuration optimized for CI/CD
+    prerender: {
+      crawlLinks: true,
+      failOnError: false,
+      routes: ['/'],
+      ignore: ['/admin/**', '/api/**']
+    },
+    // ISR (Incremental Static Regeneration) configuration
+    routeRules: {
+      // Homepage - prerender for static generation
+      '/': { prerender: true },
+      '/en': { prerender: true },
+      
+      // About pages - ISR with 1 hour revalidation
+      '/about': { isr: 3600 },
+      '/en/about': { isr: 3600 },
+      
+      // Contact pages - ISR with 6 hours revalidation
+      '/contact': { isr: 21600 },
+      '/en/contact': { isr: 21600 },
+      
+      // Blog index pages - ISR with 15 minutes revalidation
+      '/blog': { isr: 900 },
+      '/en/blog': { isr: 900 },
+      
+      // Individual blog posts - ISR with 1 hour revalidation
+      '/blog/**': { isr: 3600 },
+      '/en/blog/**': { isr: 3600 },
+      
+      // Static pages - cache for 1 day
+      '/projects': { isr: 86400 },
+      '/en/projects': { isr: 86400 },
+      
+      // API routes - no caching for dynamic content
+      '/api/**': { 
+        cors: true,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      },
+      
+      // Health check - no caching
+      '/api/health': { 
+        cors: true,
+        headers: { 'Cache-Control': 'no-cache' }
+      },
+      
+      // Static assets - aggressive caching
+      '/_nuxt/**': { 
+        headers: { 
+          'Cache-Control': 'public, max-age=31536000, immutable' 
+        } 
+      },
+      '/images/**': { 
+        headers: { 
+          'Cache-Control': 'public, max-age=31536000, immutable' 
+        } 
+      },
+      '/favicon.ico': { 
+        headers: { 
+          'Cache-Control': 'public, max-age=86400' 
+        } 
+      },
+      
+      // Fonts - cache for 1 year
+      '/fonts/**': { 
+        headers: { 
+          'Cache-Control': 'public, max-age=31536000, immutable' 
+        } 
+      }
+    },
+    // Performance optimizations
+    minify: true,
+    // Enable experimental features for better performance
+    experimental: {
+      wasm: false // Disable WASM for compatibility
+    },
+    // Storage configuration for ISR
+    storage: {
+      redis: {
+        driver: 'redis',
+        // Redis connection for production ISR caching
+        host: process.env.REDIS_HOST || 'localhost',
+        port: process.env.REDIS_PORT || 6379,
+        password: process.env.REDIS_PASSWORD || undefined,
+        db: process.env.REDIS_DB || 0
+      }
+    }
   },
 
   // Performance optimizations and modern features
@@ -143,24 +257,100 @@ export default defineNuxtConfig({
     emitRouteChunkError: 'automatic' // Handle chunk loading errors gracefully
   },
 
-  // Runtime config
+  // Runtime config with comprehensive environment management
   runtimeConfig: {
     // Private keys (only available on server-side)
     apiSecret: process.env.NUXT_API_SECRET || '',
+    jwtSecret: process.env.JWT_SECRET || '',
+    sessionSecret: process.env.SESSION_SECRET || '',
+    databaseUrl: process.env.DATABASE_URL || '',
+    
+    // Email configuration
+    smtpHost: process.env.SMTP_HOST || '',
+    smtpPort: process.env.SMTP_PORT || '587',
+    smtpUser: process.env.SMTP_USER || '',
+    smtpPass: process.env.SMTP_PASS || '',
+    smtpFrom: process.env.SMTP_FROM || '',
+    
+    // Third-party API keys (server-side)
+    sendgridApiKey: process.env.SENDGRID_API_KEY || '',
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    sentryAuthToken: process.env.SENTRY_AUTH_TOKEN || '',
+    
+    // Security configuration
+    rateLimitMax: process.env.RATE_LIMIT_MAX || '100',
+    rateLimitWindow: process.env.RATE_LIMIT_WINDOW || '900000',
+    corsOrigin: process.env.CORS_ORIGIN || '',
+    
     // Public keys (exposed to client-side)
     public: {
+      // Core application
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || process.env.URL || process.env.VERCEL_URL || 'https://your-domain.com',
+      siteName: process.env.NUXT_PUBLIC_SITE_NAME || process.env.SITE_NAME || 'Your Personal Website',
+      siteDescription: process.env.NUXT_PUBLIC_SITE_DESCRIPTION || 'Personal portfolio and blog website',
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api',
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://your-domain.com'
+      
+      // Environment detection
+      environment: process.env.NUXT_ENV_ENVIRONMENT || process.env.NODE_ENV || 'development',
+      
+      // Platform detection
+      isVercel: process.env.VERCEL === '1',
+      isNetlify: process.env.NETLIFY === 'true',
+      vercelEnv: process.env.VERCEL_ENV || '',
+      netlifyContext: process.env.CONTEXT || '',
+      
+      // Feature flags
+      featureBlog: process.env.NUXT_PUBLIC_FEATURE_BLOG === 'true',
+      featureProjects: process.env.NUXT_PUBLIC_FEATURE_PROJECTS === 'true',
+      featureContactForm: process.env.NUXT_PUBLIC_FEATURE_CONTACT_FORM === 'true',
+      featureNewsletter: process.env.NUXT_PUBLIC_FEATURE_NEWSLETTER === 'true',
+      featureComments: process.env.NUXT_PUBLIC_FEATURE_COMMENTS === 'true',
+      featureSearch: process.env.NUXT_PUBLIC_FEATURE_SEARCH === 'true',
+      featureAnalytics: process.env.NUXT_PUBLIC_FEATURE_ANALYTICS === 'true',
+      featureErrorTracking: process.env.NUXT_PUBLIC_FEATURE_ERROR_TRACKING === 'true',
+      
+      // Social media
+      githubUrl: process.env.NUXT_PUBLIC_GITHUB_URL || '',
+      linkedinUrl: process.env.NUXT_PUBLIC_LINKEDIN_URL || '',
+      twitterUrl: process.env.NUXT_PUBLIC_TWITTER_URL || '',
+      instagramUrl: process.env.NUXT_PUBLIC_INSTAGRAM_URL || '',
+      twitterHandle: process.env.NUXT_PUBLIC_TWITTER_HANDLE || '',
+      
+      // Analytics
+      googleAnalyticsId: process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID || '',
+      gtmId: process.env.NUXT_PUBLIC_GTM_ID || '',
+      umamiWebsiteId: process.env.NUXT_PUBLIC_UMAMI_WEBSITE_ID || '',
+      umamiUrl: process.env.NUXT_PUBLIC_UMAMI_URL || '',
+      plausibleDomain: process.env.NUXT_PUBLIC_PLAUSIBLE_DOMAIN || '',
+      plausibleApiHost: process.env.NUXT_PUBLIC_PLAUSIBLE_API_HOST || '',
+      
+      // Error tracking
+      sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || '',
+      logRocketAppId: process.env.NUXT_PUBLIC_LOGROCKET_APP_ID || '',
+      
+      // Comments
+      giscusRepo: process.env.NUXT_PUBLIC_GISCUS_REPO || '',
+      giscusRepoId: process.env.NUXT_PUBLIC_GISCUS_REPO_ID || '',
+      giscusCategory: process.env.NUXT_PUBLIC_GISCUS_CATEGORY || '',
+      giscusCategoryId: process.env.NUXT_PUBLIC_GISCUS_CATEGORY_ID || '',
+      
+      // CDN and performance
+      cdnUrl: process.env.NUXT_PUBLIC_CDN_URL || '',
+      imageDomains: process.env.NUXT_PUBLIC_IMAGE_DOMAINS || '',
+      
+      // Development features
+      devtools: process.env.NUXT_DEVTOOLS_ENABLED === 'true',
+      debug: process.env.DEBUG === 'true'
     }
   },
 
-  // App configuration
+  // App configuration with performance optimizations
   app: {
     head: {
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
       link: [
-        // Preconnect to Google Fonts domains for faster loading
+        // Preconnect to critical domains for faster loading
         {
           rel: 'preconnect',
           href: 'https://fonts.googleapis.com'
@@ -169,7 +359,50 @@ export default defineNuxtConfig({
           rel: 'preconnect',
           href: 'https://fonts.gstatic.com',
           crossorigin: 'anonymous'
+        },
+        // Preconnect to CDN if configured
+        ...(process.env.NUXT_PUBLIC_CDN_URL ? [{
+          rel: 'preconnect',
+          href: process.env.NUXT_PUBLIC_CDN_URL,
+          crossorigin: 'anonymous'
+        }] : []),
+        // Preconnect to analytics domains
+        {
+          rel: 'preconnect',
+          href: 'https://www.googletagmanager.com'
+        },
+        {
+          rel: 'preconnect', 
+          href: 'https://www.google-analytics.com'
+        },
+        // DNS prefetch for social media domains
+        {
+          rel: 'dns-prefetch',
+          href: 'https://github.com'
+        },
+        {
+          rel: 'dns-prefetch',
+          href: 'https://linkedin.com'
+        },
+        {
+          rel: 'dns-prefetch',
+          href: 'https://twitter.com'
         }
+      ],
+      // Performance optimization meta tags
+      meta: [
+        // Core Web Vitals optimization
+        { name: 'theme-color', content: '#0f172a' },
+        { name: 'msapplication-TileColor', content: '#0f172a' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+        // Performance hints
+        { 'http-equiv': 'x-dns-prefetch-control', content: 'on' },
+        { name: 'format-detection', content: 'telephone=no' },
+        // Security headers
+        { 'http-equiv': 'X-Content-Type-Options', content: 'nosniff' },
+        { 'http-equiv': 'X-Frame-Options', content: 'DENY' },
+        { 'http-equiv': 'X-XSS-Protection', content: '1; mode=block' }
       ]
     }
   },
@@ -362,7 +595,6 @@ export default defineNuxtConfig({
         disallow: [
           '/admin/',
           '/private/',
-          '/_nuxt/',
           '/api/private'
         ]
       }

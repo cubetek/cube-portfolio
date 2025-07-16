@@ -36,6 +36,7 @@
                 <UIcon name="i-heroicons-envelope" />
                 {{ $t('about.getInTouch') || 'Get in Touch' }}
               </UButton>
+              <!-- CV Download temporarily disabled
               <UButton
                 to="/cv.pdf"
                 target="_blank"
@@ -46,18 +47,18 @@
                 <UIcon name="i-heroicons-document-arrow-down" />
                 {{ $t('about.downloadCV') || 'Download CV' }}
               </UButton>
+              -->
             </div>
           </div>
           
           <!-- Hero Image -->
           <div class="hero-image">
             <div class="image-container">
-              <NuxtImg
+              <img
                 src="/images/profile-hero.jpg"
                 alt="Professional headshot"
                 class="profile-image"
                 loading="eager"
-                format="webp"
                 width="400"
                 height="400"
               />
@@ -215,7 +216,6 @@ interface Value {
 
 // Composables
 const { locale, t } = useI18n()
-const localePath = useLocalePath()
 
 // Fetch content based on current locale using the new queryCollection API
 const { data: contentData } = await useAsyncData(
