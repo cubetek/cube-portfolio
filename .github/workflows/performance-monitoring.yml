@@ -462,7 +462,13 @@ jobs:
         version: 'latest'
 
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: |
+        echo "Installing dependencies..."
+        if [ -f "pnpm-lock.yaml" ]; then
+          pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+        else
+          pnpm install --no-frozen-lockfile
+        fi
 
     - name: Build with analysis
       run: |

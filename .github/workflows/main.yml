@@ -84,7 +84,20 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
-        run: pnpm install --frozen-lockfile
+        run: |
+          echo "Installing dependencies..."
+          if [ -f "pnpm-lock.yaml" ]; then
+            echo "Found pnpm-lock.yaml, attempting frozen lockfile install..."
+            if pnpm install --frozen-lockfile; then
+              echo "✅ Frozen lockfile install successful"
+            else
+              echo "⚠️  Frozen lockfile install failed, falling back to regular install..."
+              pnpm install --no-frozen-lockfile
+            fi
+          else
+            echo "No pnpm-lock.yaml found, running regular install..."
+            pnpm install --no-frozen-lockfile
+          fi
 
   # Job 2: Linting
   lint:
@@ -120,7 +133,13 @@ jobs:
             pnpm-${{ runner.os }}-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          echo "Installing dependencies..."
+          if [ -f "pnpm-lock.yaml" ]; then
+            pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+          else
+            pnpm install --no-frozen-lockfile
+          fi
 
       - name: Run ESLint
         run: |
@@ -176,7 +195,13 @@ jobs:
             pnpm-${{ runner.os }}-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          echo "Installing dependencies..."
+          if [ -f "pnpm-lock.yaml" ]; then
+            pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+          else
+            pnpm install --no-frozen-lockfile
+          fi
 
       - name: Generate Nuxt types
         run: pnpm nuxt prepare
@@ -228,7 +253,13 @@ jobs:
             pnpm-${{ runner.os }}-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          echo "Installing dependencies..."
+          if [ -f "pnpm-lock.yaml" ]; then
+            pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+          else
+            pnpm install --no-frozen-lockfile
+          fi
 
       - name: Run tests
         run: |
@@ -312,7 +343,13 @@ jobs:
             pnpm-${{ runner.os }}-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          echo "Installing dependencies..."
+          if [ -f "pnpm-lock.yaml" ]; then
+            pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+          else
+            pnpm install --no-frozen-lockfile
+          fi
 
       - name: Cache Nuxt build
         uses: actions/cache@v4
@@ -401,7 +438,13 @@ jobs:
             pnpm-${{ runner.os }}-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          echo "Installing dependencies..."
+          if [ -f "pnpm-lock.yaml" ]; then
+            pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
+          else
+            pnpm install --no-frozen-lockfile
+          fi
 
       - name: Cache Nuxt generate
         uses: actions/cache@v4

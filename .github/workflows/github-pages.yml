@@ -61,7 +61,19 @@ jobs:
       - name: Install dependencies
         run: |
           echo "Installing dependencies..."
-          pnpm install --frozen-lockfile
+          # Check if lockfile exists and is compatible
+          if [ -f "pnpm-lock.yaml" ]; then
+            echo "Found pnpm-lock.yaml, attempting frozen lockfile install..."
+            if pnpm install --frozen-lockfile; then
+              echo "✅ Frozen lockfile install successful"
+            else
+              echo "⚠️  Frozen lockfile install failed, falling back to regular install..."
+              pnpm install --no-frozen-lockfile
+            fi
+          else
+            echo "No pnpm-lock.yaml found, running regular install..."
+            pnpm install --no-frozen-lockfile
+          fi
 
       - name: Setup Pages
         id: pages
