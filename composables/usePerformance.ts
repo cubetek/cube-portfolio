@@ -232,7 +232,8 @@ export function useResourcePreloader() {
   const preloadedResources = ref<Set<string>>(new Set())
 
   const preloadImage = (src: string, priority: 'high' | 'low' = 'low') => {
-    if (preloadedResources.value.has(src)) return
+    if (typeof window === 'undefined') return Promise.resolve()
+    if (preloadedResources.value.has(src)) return Promise.resolve()
 
     const link = document.createElement('link')
     link.rel = 'preload'
@@ -252,6 +253,7 @@ export function useResourcePreloader() {
   }
 
   const preloadFont = (href: string, family: string) => {
+    if (typeof window === 'undefined') return
     if (preloadedResources.value.has(href)) return
 
     const link = document.createElement('link')
@@ -266,6 +268,7 @@ export function useResourcePreloader() {
   }
 
   const preloadScript = (src: string) => {
+    if (typeof window === 'undefined') return
     if (preloadedResources.value.has(src)) return
 
     const link = document.createElement('link')
@@ -494,14 +497,25 @@ export function usePerformanceOptimization() {
   const { memoryUsage, optimizeMemory, addCleanupTask } = useMemoryOptimization()
 
   const initializeOptimizations = async () => {
+    if (typeof window === 'undefined') return
+    
     await optimizeAboveTheFold()
     
     // Defer non-critical optimizations
-    requestIdleCallback(() => {
-      deferNonCriticalResources()
-      analyzeBundle()
-      optimizeChunks()
-    })
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(() => {
+        deferNonCriticalResources()
+        analyzeBundle()
+        optimizeChunks()
+      })
+    } else {
+      // Fallback for environments without requestIdleCallback
+      setTimeout(() => {
+        deferNonCriticalResources()
+        analyzeBundle()
+        optimizeChunks()
+      }, 100)
+    }
 
     // Google Fonts module handles font preloading automatically
     // No manual preloading needed
